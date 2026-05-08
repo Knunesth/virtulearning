@@ -23,23 +23,33 @@ export const Login = () => {
     resolver: zodResolver(loginSchema)
   });
 
+  const handleQuickLogin = (role: 'aluno' | 'professor') => {
+    setAuth({
+      id_usuario: role === 'professor' ? 2 : 1,
+      tenant_id: 1,
+      nome: role === 'professor' ? "Prof. João" : "Aluno Kauã",
+      email: `${role}@virtulearning.com`,
+      tipo_usuario: role
+    }, "fake_jwt_token");
+
+    navigate(role === 'professor' ? '/teacher' : '/dashboard');
+  };
+
   const onSubmit = async (data: LoginForm) => {
     try {
-      // Fake API call for now to demonstrate routing and state
-      // const response = await api.post('/auth/login', { email: data.email, senha: data.senha });
-      // setAuth(response.data.user, response.data.accessToken);
+      // Mocking success based on email typed
+      const role = data.email.includes('prof') ? 'professor' : 'aluno';
       
-      // Mocking success
       await new Promise(r => setTimeout(r, 1000));
       setAuth({
-        id_usuario: 1,
+        id_usuario: role === 'professor' ? 2 : 1,
         tenant_id: 1,
-        nome: "Kaua",
+        nome: role === 'professor' ? "Prof. Especialista" : "Aluno Padrão",
         email: data.email,
-        tipo_usuario: "admin"
+        tipo_usuario: role
       }, "fake_jwt_token");
 
-      navigate('/dashboard');
+      navigate(role === 'professor' ? '/teacher' : '/dashboard');
     } catch (error) {
       console.error(error);
       alert('Erro ao realizar login');
@@ -80,9 +90,32 @@ export const Login = () => {
         <Button type="submit" className="w-full mt-2" isLoading={isSubmitting}>
           Acessar Plataforma
         </Button>
+
+        {/* Quick Login Hacks for Dev */}
+        <div className="pt-4 border-t border-border mt-4">
+          <p className="text-xs text-center text-muted mb-3 uppercase tracking-wider font-bold">Acesso Rápido (Dev)</p>
+          <div className="flex gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full text-xs font-bold border-border/50 text-white hover:bg-white/5" 
+              onClick={() => handleQuickLogin('aluno')}
+            >
+              Sou Aluno
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full text-xs font-bold border-accent/30 text-accent hover:bg-accent/10" 
+              onClick={() => handleQuickLogin('professor')}
+            >
+              Sou Professor
+            </Button>
+          </div>
+        </div>
       </form>
 
-      <div className="mt-8 pt-8 flex flex-col items-center gap-4 text-xs">
+      <div className="mt-6 pt-6 flex flex-col items-center gap-4 text-xs">
         <p className="text-[#71717a]">
           Quer fazer parte do time?{' '}
           <Link to="/apply" className="font-bold text-accent hover:text-accentHover transition-colors">

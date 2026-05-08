@@ -16,7 +16,8 @@ export default {
         accent: '#FFD700',
         accentHover: '#e6c200',
         danger: '#ef4444',
-        success: '#22c55e'
+        success: '#22c55e',
+        warning: '#eab308'
       }
     }
   },

@@ -23,7 +23,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     tenant_id: 1,
     nome: 'Usuário',
     email: 'usuario@teste.com',
-    tipo_usuario: 'professor'
+    tipo_usuario: 'aluno'
   },
   token: 'mock-token',
   isAuthenticated: true,
