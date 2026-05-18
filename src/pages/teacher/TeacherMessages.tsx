@@ -119,17 +119,17 @@ export const TeacherMessages = () => {
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 bg-card/60 backdrop-blur-md border border-border/50 rounded-2xl shadow-lg shadow-black/20 overflow-hidden flex flex-col md:flex-row">
+      <div className="flex-1 bg-card border border-border rounded-2xl shadow-lg shadow-black/20 overflow-hidden flex flex-col md:flex-row">
         
         {/* Coluna Esquerda: Lista de Conversas (30%) */}
-        <div className="w-full md:w-[320px] border-r border-border/50 flex flex-col bg-bg/30 shrink-0">
-          <div className="p-4 border-b border-border/50">
+        <div className="w-full md:w-[320px] border-r border-border flex flex-col bg-bg shrink-0">
+          <div className="p-4 border-b border-border">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
               <input 
                 type="text" 
                 placeholder="Buscar aluno ou curso..." 
-                className="w-full h-10 pl-9 pr-4 bg-black/40 border border-border/50 rounded-xl text-sm text-white focus:outline-none focus:border-accent/50 shadow-inner"
+                className="w-full h-10 pl-9 pr-4 bg-[#09090b] border border-border rounded-xl text-sm text-white focus:outline-none focus:border-accent/50 shadow-inner"
               />
             </div>
           </div>
@@ -143,8 +143,8 @@ export const TeacherMessages = () => {
                 <button
                   key={conv.id}
                   onClick={() => setActiveId(conv.id)}
-                  className={`w-full flex items-start gap-3 p-4 border-b border-border/30 transition-all duration-200 text-left hover:bg-white/5
-                    ${isActive ? 'bg-accent/10 border-l-2 border-l-accent' : 'border-l-2 border-l-transparent'}
+                  className={`w-full flex items-start gap-3 p-4 border-b border-border transition-all duration-200 text-left hover:bg-[#18181b]
+                    ${isActive ? 'bg-[#18181b] border-l-2 border-l-accent' : 'border-l-2 border-l-transparent'}
                   `}
                 >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-inner shrink-0 ${conv.color}/20 text-${conv.color.split('-')[1]}-400 border border-${conv.color.split('-')[1]}-500/30`}>
@@ -170,9 +170,9 @@ export const TeacherMessages = () => {
 
         {/* Coluna Direita: Área de Chat (70%) */}
         {activeConversation ? (
-          <div className="flex-1 flex flex-col bg-bg/10 relative">
+          <div className="flex-1 flex flex-col bg-[#09090b] relative">
             {/* Chat Header */}
-            <div className="h-16 border-b border-border/50 flex items-center justify-between px-6 bg-card/40 backdrop-blur-md sticky top-0 z-10">
+            <div className="h-16 border-b border-border flex items-center justify-between px-6 bg-card sticky top-0 z-10">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-inner shrink-0 ${activeConversation.color}/20 text-${activeConversation.color.split('-')[1]}-400 border border-${activeConversation.color.split('-')[1]}-500/30`}>
                   {activeConversation.initial}
@@ -203,8 +203,8 @@ export const TeacherMessages = () => {
                       <div className={`
                         px-4 py-3 rounded-2xl shadow-sm text-sm
                         ${isTeacher 
-                          ? 'bg-accent/20 border border-accent/30 text-white rounded-br-sm' 
-                          : 'bg-card border border-border/50 text-gray-200 rounded-bl-sm'}
+                          ? 'bg-accent/10 border border-accent/20 text-white rounded-br-sm' 
+                          : 'bg-card border border-border text-gray-200 rounded-bl-sm'}
                       `}>
                         {msg.text}
                       </div>
@@ -217,7 +217,7 @@ export const TeacherMessages = () => {
             </div>
 
             {/* Chat Input */}
-            <div className="p-4 border-t border-border/50 bg-card/40 backdrop-blur-md">
+            <div className="p-4 border-t border-border bg-card">
               <div className="flex items-end gap-2">
                 <button className="w-10 h-10 rounded-xl hover:bg-white/5 flex flex-shrink-0 items-center justify-center text-muted hover:text-white transition-colors">
                   <ImageIcon size={20} />
@@ -226,19 +226,19 @@ export const TeacherMessages = () => {
                   <FileText size={20} />
                 </button>
                 <div className="flex-1 relative">
-                  <textarea 
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    placeholder="Digite sua resposta..."
-                    className="w-full bg-black/40 border border-border/50 focus:border-accent/50 rounded-xl px-4 py-3 text-sm text-white resize-none shadow-inner min-h-[44px] max-h-32 focus:outline-none"
-                    rows={1}
-                  />
+                    <textarea 
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      placeholder="Digite sua resposta..."
+                      className="w-full bg-[#09090b] border border-border focus:border-accent/50 rounded-xl px-4 py-3 text-sm text-white resize-none shadow-inner min-h-[44px] max-h-32 focus:outline-none"
+                      rows={1}
+                    />
                 </div>
                 <button 
                   onClick={handleSendMessage}
@@ -252,7 +252,7 @@ export const TeacherMessages = () => {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted bg-bg/10">
+          <div className="flex-1 flex flex-col items-center justify-center text-muted bg-[#09090b]">
             <MessageSquare size={48} className="mb-4 opacity-20" />
             <p>Selecione uma conversa para começar a responder.</p>
           </div>

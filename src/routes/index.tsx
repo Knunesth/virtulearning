@@ -17,6 +17,22 @@ import { TeacherMessages } from '../pages/teacher/TeacherMessages';
 import { TeacherProfile } from '../pages/teacher/TeacherProfile';
 import { TeacherCourseBuilder } from '../pages/teacher/TeacherCourseBuilder';
 
+import { Terms } from '../pages/Terms';
+import { Privacy } from '../pages/Privacy';
+import { Cookies } from '../pages/Cookies';
+import { About } from '../pages/About';
+import { Enterprise } from '../pages/Enterprise';
+
+import { AdminLayout } from '../components/layout/AdminLayout';
+import { AdminOverview } from '../pages/admin/AdminOverview';
+import { AdminUsers } from '../pages/admin/AdminUsers';
+import { AdminApplications } from '../pages/admin/AdminApplications';
+import { AdminProfile } from '../pages/admin/AdminProfile';
+import { AdminCourses } from '../pages/admin/AdminCourses';
+import { AdminFinancials } from '../pages/admin/AdminFinancials';
+import { AdminSettings } from '../pages/admin/AdminSettings';
+import { AdminLogs } from '../pages/admin/AdminLogs';
+
 // Simple placeholders for pages until we build them
 
 import { Dashboard } from '../pages/Dashboard';
@@ -25,9 +41,6 @@ import { Ranking } from '../pages/student/Ranking';
 import { Quiz } from '../pages/student/Quiz';
 import { Profile } from '../pages/student/Profile';
 import { MyCourses } from '../pages/student/MyCourses';
-
-const AdminPanel = () => <div><h1 className="text-2xl font-bold mb-4">Painel Administrativo</h1></div>;
-
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -35,6 +48,11 @@ export const AppRoutes = () => {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Landing />} />
         <Route path="/apply" element={<TeacherApplication />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/cookies" element={<Cookies />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/enterprise" element={<Enterprise />} />
       </Route>
 
       {/* Hybrid Routes (Adapta para Sidebar se logado) */}
@@ -73,8 +91,15 @@ export const AppRoutes = () => {
 
       {/* Admin Routes */}
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-        <Route element={<DashboardLayout />}>
-          <Route path="/admin" element={<AdminPanel />} />
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminOverview />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/applications" element={<AdminApplications />} />
+          <Route path="/admin/profile" element={<AdminProfile />} />
+          <Route path="/admin/courses" element={<AdminCourses />} />
+          <Route path="/admin/financials" element={<AdminFinancials />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/logs" element={<AdminLogs />} />
         </Route>
       </Route>
     </Routes>

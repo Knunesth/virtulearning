@@ -1,0 +1,216 @@
+// ==============================================================================
+// PRISMA SCHEMA — VirtuLearning
+// TiDB é MySQL-compatível, então usamos o provider "mysql"
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma" // Necessário para TiDB (não suporta FK nativas por padrão)
+}
+
+// ── ENUMS ──────────────────────────────────────────────────────────────────────
+
+enum TipoUsuario {
+  aluno
+  professor
+  admin
+}
+
+enum StatusUsuario {
+  ativo
+  suspenso
+  pendente_verificacao
+}
+
+enum StatusCurso {
+  rascunho
+  publicado
+  suspenso
+  arquivado
+}
+
+enum StatusCandidatura {
+  pendente
+  aprovado
+  rejeitado
+}
+
+enum StatusMatricula {
+  ativa
+  concluida
+  cancelada
+}
+
+enum SenderMensagem {
+  aluno
+  professor
+}
+
+// ── MODELOS ───────────────────────────────────────────────────────────────────
+
+model User {
+  id            Int           @id @default(autoincrement())
+  tenant_id     Int           @default(1)
+  nome          String        @db.VarChar(120)
+  email         String        @unique @db.VarChar(200)
+  senha_hash    String        @db.VarChar(255)
+  tipo_usuario  TipoUsuario   @default(aluno)
+  status        StatusUsuario @default(ativo)
+
+  // Segurança
+  login_tentativas     Int       @default(0)
+  bloqueado_ate        DateTime?
+  email_verificado     Boolean   @default(false)
+  refresh_token_hash   String?   @db.VarChar(255)
+  ultimo_login         DateTime?
+
+  // Perfil
+  avatar_url    String?   @db.VarChar(500)
+  bio           String?   @db.Text
+  telefone      String?   @db.VarChar(20)
+  linkedin_url  String?   @db.VarChar(500)
+  genero        String?   @db.VarChar(30)
+  nickname      String?   @unique @db.VarChar(60)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Relações
+  cursos            Course[]
+  matriculas        Enrollment[]
+  mensagens_enviadas Message[]     @relation("MensagensEnviadas")
+  candidatura       TeacherApplication?
+
+  @@index([email])
+  @@index([tipo_usuario])
+  @@map("users")
+}
+
+model Course {
+  id           Int         @id @default(autoincrement())
+  titulo       String      @db.VarChar(200)
+  descricao    String      @db.Text
+  thumbnail    String?     @db.VarChar(500)
+  preco        Decimal     @db.Decimal(10, 2)
+  status       StatusCurso @default(rascunho)
+  professor_id Int
+  nivel        String      @default("iniciante") @db.VarChar(30)
+  duracao_horas Int        @default(0)
+  linguagem    String      @default("Português") @db.VarChar(50)
+
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+
+  // Relações
+  professor    User          @relation(fields: [professor_id], references: [id])
+  modulos      Module[]
+  matriculas   Enrollment[]
+
+  @@index([professor_id])
+  @@index([status])
+  @@map("courses")
+}
+
+model Module {
+  id        Int      @id @default(autoincrement())
+  curso_id  Int
+  titulo    String   @db.VarChar(200)
+  ordem     Int      @default(0)
+
+  curso   Course   @relation(fields: [curso_id], references: [id])
+  aulas   Lesson[]
+
+  @@index([curso_id])
+  @@map("modules")
+}
+
+model Lesson {
+  id         Int    @id @default(autoincrement())
+  modulo_id  Int
+  titulo     String @db.VarChar(200)
+  url_video  String? @db.VarChar(500)
+  duracao    Int    @default(0) // Em segundos
+  ordem      Int    @default(0)
+  gratuita   Boolean @default(false)
+
+  modulo Module @relation(fields: [modulo_id], references: [id])
+
+  @@index([modulo_id])
+  @@map("lessons")
+}
+
+model Enrollment {
+  id         Int             @id @default(autoincrement())
+  aluno_id   Int
+  curso_id   Int
+  status     StatusMatricula @default(ativa)
+  progresso  Int             @default(0) // 0 a 100
+  created_at DateTime        @default(now())
+  updated_at DateTime        @updatedAt
+
+  aluno  User   @relation(fields: [aluno_id], references: [id])
+  curso  Course @relation(fields: [curso_id], references: [id])
+
+  @@unique([aluno_id, curso_id])
+  @@index([aluno_id])
+  @@index([curso_id])
+  @@map("enrollments")
+}
+
+model Message {
+  id             Int            @id @default(autoincrement())
+  aluno_id       Int
+  professor_id   Int
+  curso_id       Int?
+  texto          String         @db.Text
+  sender         SenderMensagem
+  lida           Boolean        @default(false)
+  created_at     DateTime       @default(now())
+
+  remetente User @relation("MensagensEnviadas", fields: [aluno_id], references: [id])
+
+  @@index([aluno_id])
+  @@index([professor_id])
+  @@map("messages")
+}
+
+model TeacherApplication {
+  id           Int               @id @default(autoincrement())
+  user_id      Int               @unique
+  especialidade String           @db.VarChar(120)
+  linkedin_url  String?          @db.VarChar(500)
+  bio           String           @db.Text
+  cursos_pretendidos String?     @db.Text
+  anos_experiencia   Int         @default(0)
+  status        StatusCandidatura @default(pendente)
+  revisado_por  Int?
+  revisado_em   DateTime?
+  motivo_rejeicao String?        @db.Text
+
+  created_at    DateTime         @default(now())
+
+  solicitante User @relation(fields: [user_id], references: [id])
+
+  @@index([status])
+  @@map("teacher_applications")
+}
+
+// Log de auditoria para ações administrativas
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  admin_id   Int
+  acao       String   @db.VarChar(100)
+  alvo       String?  @db.VarChar(200)
+  detalhes   String?  @db.Text
+  ip         String?  @db.VarChar(45)
+  created_at DateTime @default(now())
+
+  @@index([admin_id])
+  @@index([created_at])
+  @@map("audit_logs")
+}

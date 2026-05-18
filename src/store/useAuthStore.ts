@@ -21,9 +21,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: {
     id_usuario: 1,
     tenant_id: 1,
-    nome: 'Usuário',
-    email: 'usuario@teste.com',
-    tipo_usuario: 'aluno'
+    nome: 'Usuário Admin',
+    email: 'admin@virtulearning.com',
+    tipo_usuario: 'admin'
   },
   token: 'mock-token',
   isAuthenticated: true,

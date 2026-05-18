@@ -1,8 +1,10 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Moon } from 'lucide-react';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export const MainLayout = () => {
   const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
   const isApply = location.pathname === '/apply';
 
   return (
@@ -29,8 +31,14 @@ export const MainLayout = () => {
                 <button className="text-[#a1a1aa] hover:text-white transition-colors w-8 h-8 rounded-full hover:bg-[#27272a] flex items-center justify-center">
                   <Moon size={16} />
                 </button>
-                <Link to="/login" className="text-[13px] font-medium text-[#a1a1aa] hover:text-white transition-colors">Fazer Login</Link>
-                <Link to="/register" className="bg-[#18181b] border border-[#27272a] text-white px-4 py-2 rounded-md text-[13px] font-medium hover:bg-[#27272a] transition-colors shadow-sm">Cadastre-se</Link>
+                {isAuthenticated ? (
+                  <Link to="/dashboard" className="bg-accent text-black px-4 py-2 rounded-md text-[13px] font-bold hover:scale-105 transition-transform shadow-sm">Meu Painel</Link>
+                ) : (
+                  <>
+                    <Link to="/login" className="text-[13px] font-medium text-[#a1a1aa] hover:text-white transition-colors">Fazer Login</Link>
+                    <Link to="/register" className="bg-[#18181b] border border-[#27272a] text-white px-4 py-2 rounded-md text-[13px] font-medium hover:bg-[#27272a] transition-colors shadow-sm">Cadastre-se</Link>
+                  </>
+                )}
               </div>
             )}
           </nav>

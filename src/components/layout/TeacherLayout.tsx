@@ -6,7 +6,6 @@ export const TeacherLayout = () => {
     { to: '/teacher', icon: <LayoutGrid size={18} />, label: 'Visão Geral' },
     { to: '/teacher/courses', icon: <BookOpen size={18} />, label: 'Gerenciar Cursos' },
     { to: '/teacher/messages', icon: <MessageSquare size={18} />, label: 'Dúvidas Alunos' },
-    { to: '/teacher/profile', icon: <User size={18} />, label: 'Meu Perfil' },
   ];
 
   return (
@@ -51,15 +50,15 @@ export const TeacherLayout = () => {
         {/* User Footer */}
         <div className="mt-auto p-6 border-t border-border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-black font-bold">
+            <Link to="/teacher/profile" className="flex items-center gap-3 group cursor-pointer">
+              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-black font-bold group-hover:scale-105 transition-transform">
                 UT
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-white">Usuário</span>
+                <span className="text-sm font-bold text-white group-hover:text-accent transition-colors">Usuário</span>
                 <span className="text-xs text-muted">@usuario</span>
               </div>
-            </div>
+            </Link>
             <button className="text-muted hover:text-danger p-2 rounded-md hover:bg-white/5 transition-all duration-200">
               <LogOut size={16} />
             </button>

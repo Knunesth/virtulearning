@@ -1,0 +1,22 @@
+# Ambiente
+.env
+.env.local
+.env.*.local
+
+# Dependências
+node_modules/
+
+# Build
+dist/
+
+# Prisma
+*.db
+*.db-journal
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

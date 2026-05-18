@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Search, BookOpen, SlidersHorizontal, Check } from 'lucide-react';
 import { CourseCard } from '../components/ui/CourseCard';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
+import { useAuthStore } from '../store/useAuthStore';
 
 // Combinação de mocks para o catálogo
 const ALL_COURSES = [
@@ -28,6 +29,7 @@ const PRICES = ['Todos', 'Gratuito', 'Pago'];
 
 export const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isAuthenticated } = useAuthStore();
   
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [category, setCategory] = useState('Todas');
@@ -53,6 +55,8 @@ export const Catalog = () => {
     return matchSearch && matchCategory && matchLevel && matchPrice;
   });
 
+  const displayCourses = isAuthenticated ? filteredCourses : filteredCourses.slice(0, 6);
+
   const clearFilters = () => {
     setCategory('Todas');
     setLevel('Todos');
@@ -64,15 +68,16 @@ export const Catalog = () => {
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-10 animate-in fade-in duration-500">
       
-      <header className="mb-10">
+      <header className={`mb-10 ${!isAuthenticated ? 'text-center' : ''}`}>
         <h1 className="text-3xl font-bold text-white mb-3">Catálogo de Cursos</h1>
         <p className="text-muted">Explore mais de {ALL_COURSES.length} cursos disponíveis na plataforma e impulsione sua carreira.</p>
       </header>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className={`flex flex-col lg:flex-row gap-8 ${!isAuthenticated ? 'justify-center max-w-6xl mx-auto' : ''}`}>
         
-        {/* Sidebar Filters */}
-        <aside className="w-full lg:w-72 shrink-0">
+        {/* Sidebar Filters - Only for Authenticated Users */}
+        {isAuthenticated && (
+          <aside className="w-full lg:w-72 shrink-0">
           <div className="bg-card border border-border rounded-xl p-6 sticky top-6 shadow-lg">
             <div className="flex items-center gap-2 mb-8 text-text font-bold text-lg border-b border-border pb-4">
               <SlidersHorizontal size={20} className="text-accent" />
@@ -138,33 +143,61 @@ export const Catalog = () => {
             )}
 
           </div>
-        </aside>
+          </aside>
+        )}
 
         {/* Main Content */}
-        <div className="flex-1">
-          {/* Search Bar */}
-          <div className="relative mb-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={20} />
-            <input 
-              type="text" 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Pesquisar por cursos, tecnologias, instrutores..." 
-              className="w-full bg-[#09090b] border border-[#27272a] rounded-xl pl-12 pr-4 py-4 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder:text-muted shadow-sm"
-            />
-          </div>
+        <div className="flex-1 w-full">
+          {/* Search Bar - Only for Authenticated Users */}
+          {isAuthenticated && (
+            <>
+              <div className="relative mb-8">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={20} />
+                <input 
+                  type="text" 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Pesquisar por cursos, tecnologias, instrutores..." 
+                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl pl-12 pr-4 py-4 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder:text-muted shadow-sm"
+                />
+              </div>
 
-          {/* Results Count */}
-          <div className="mb-6 flex justify-between items-center">
-            <p className="text-muted text-sm">Mostrando <span className="text-white font-medium">{filteredCourses.length}</span> resultados</p>
-          </div>
+              {/* Results Count */}
+              <div className="mb-6 flex justify-between items-center">
+                <p className="text-muted text-sm">Mostrando <span className="text-white font-medium">{filteredCourses.length}</span> resultados</p>
+              </div>
+            </>
+          )}
 
           {/* Courses Grid */}
-          {filteredCourses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredCourses.map(course => (
-                <CourseCard key={course.id} {...course} className="w-full" />
-              ))}
+          {displayCourses.length > 0 ? (
+            <div className="relative">
+              <div className={`grid grid-cols-1 md:grid-cols-2 ${!isAuthenticated ? 'lg:grid-cols-3' : 'xl:grid-cols-3'} gap-6`}>
+                {displayCourses.map(course => (
+                  <CourseCard key={course.id} {...course} className="w-full" previewMode={!isAuthenticated} />
+                ))}
+              </div>
+              
+              {/* Paywall Overlay for Non-Authenticated Users */}
+              {!isAuthenticated && (
+                <div className="mt-8 relative z-10 flex flex-col items-center justify-center p-10 md:p-14 rounded-2xl bg-[#09090b]/90 backdrop-blur-sm border border-[#27272a] shadow-[0_-30px_60px_rgba(9,9,11,0.9)] -mt-10 md:-mt-24 text-center">
+                  <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center text-accent mb-6">
+                    <BookOpen size={32} />
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-4">Descubra muito mais na VirtuLearning</h3>
+                  <p className="text-[#a1a1aa] mb-8 max-w-lg leading-relaxed">
+                    Você está vendo apenas uma prévia. Faça login ou cadastre-se gratuitamente para explorar nosso catálogo completo com centenas de cursos disponíveis.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Link to="/register" className="bg-accent text-black font-bold px-8 py-3.5 rounded-xl shadow-[0_0_20px_rgba(255,215,0,0.2)] hover:scale-105 transition-all text-sm md:text-base">
+                      Criar Conta Grátis
+                    </Link>
+                    <Link to="/login" className="bg-[#18181b] text-white font-bold border border-[#27272a] px-8 py-3.5 rounded-xl hover:bg-[#27272a] transition-all text-sm md:text-base">
+                      Fazer Login
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-20 bg-card border border-border rounded-xl shadow-lg">

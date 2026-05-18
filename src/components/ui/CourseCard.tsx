@@ -13,6 +13,7 @@ interface CourseCardProps {
   price?: number;
   progress?: number;
   className?: string;
+  previewMode?: boolean;
 }
 
 export const CourseCard = ({
@@ -26,7 +27,8 @@ export const CourseCard = ({
   modules,
   price,
   progress,
-  className = "w-[300px] shrink-0"
+  className = "w-[300px] shrink-0",
+  previewMode = false
 }: CourseCardProps) => {
   return (
     <Link to={`/course/${id}`} className={`block group ${className}`}>
@@ -72,6 +74,13 @@ export const CourseCard = ({
                 <div className="w-full bg-black/40 rounded-full h-1.5 border border-border/30 overflow-hidden">
                   <div className="bg-accent h-1.5 rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
                 </div>
+              </div>
+            ) : previewMode ? (
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-xs font-medium text-muted">{modules} módulos</span>
+                <span className="text-xs font-bold px-2 py-1 bg-accent/10 text-accent rounded flex items-center gap-1">
+                  Conteúdo Premium
+                </span>
               </div>
             ) : (
               <div className="flex items-center justify-between">
