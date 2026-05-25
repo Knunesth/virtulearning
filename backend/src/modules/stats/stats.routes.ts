@@ -39,7 +39,7 @@ export async function statsRoutes(fastify: FastifyInstance) {
       const now = new Date();
       // Criar labels para os últimos 6 meses (ex: "Jan", "Fev")
       const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-      const last6Months = [];
+      const last6Months: Array<{ year: number; month: number; name: string; revenue: number }> = [];
       for (let i = 5; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         last6Months.push({
