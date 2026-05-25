@@ -175,31 +175,48 @@ export const DashboardLayout = () => {
           )}
 
         </nav>
-        <div className="p-4 border-t border-transparent bg-[#18181b]/80">
-          <Link 
-            to={viewMode === 'admin' ? "/admin/profile" : (viewMode === 'professor' ? "/teacher/profile" : "/profile")} 
-            className="flex items-center gap-3 mb-4 p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer w-full"
-            title="Configurações de Perfil"
-          >
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-black transition-transform group-hover:scale-105 ${viewMode === 'admin' ? 'bg-danger/80 text-white' : 'bg-accent'}`}>
-              {user?.nome?.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 text-left overflow-hidden">
-              <p className={`font-medium text-sm transition-colors truncate ${viewMode === 'admin' ? 'group-hover:text-danger text-white' : 'group-hover:text-accent text-white'}`}>
-                {user?.nome}
-              </p>
-              <p className={`text-xs capitalize ${viewMode === 'admin' ? 'text-danger font-bold tracking-wider uppercase' : 'text-muted'}`}>
-                {user?.tipo_usuario}
-              </p>
-            </div>
-            <Settings size={18} className="text-muted group-hover:text-white transition-colors" />
-          </Link>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-danger hover:text-danger/80 transition-colors w-full px-2"
-          >
-            <LogOut size={18} /> Sair
-          </button>
+        <div className="p-4 mt-auto">
+          <div className="bg-gradient-to-b from-white/[0.03] to-transparent rounded-2xl border border-white/5 p-2 backdrop-blur-md relative overflow-hidden group/profile">
+            <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover/profile:opacity-100 transition-opacity duration-500"></div>
+            
+            <Link 
+              to={viewMode === 'admin' ? "/admin/profile" : (viewMode === 'professor' ? "/teacher/profile" : "/profile")} 
+              className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-all duration-300 relative z-10"
+              title="Configurações de Perfil"
+            >
+              <div className={`w-11 h-11 rounded-full flex items-center justify-center font-black transition-transform duration-300 group-hover/profile:scale-105 group-hover/profile:rotate-3 shadow-lg overflow-hidden border-2 border-transparent group-hover/profile:border-accent/30 ${viewMode === 'admin' ? 'bg-danger/80 text-white' : 'bg-accent text-black'}`}>
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  user?.nome?.charAt(0).toUpperCase()
+                )}
+              </div>
+              
+              <div className="flex-1 text-left overflow-hidden">
+                <p className={`font-bold text-sm truncate transition-colors duration-300 ${viewMode === 'admin' ? 'group-hover/profile:text-danger text-white' : 'group-hover/profile:text-accent text-white'}`}>
+                  {user?.nome}
+                </p>
+                <p className={`text-[10px] uppercase tracking-widest font-bold mt-0.5 ${viewMode === 'admin' ? 'text-danger/80' : 'text-accent/80'}`}>
+                  {user?.tipo_usuario}
+                </p>
+              </div>
+              
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 opacity-0 group-hover/profile:opacity-100 transition-all duration-300 transform translate-x-2 group-hover/profile:translate-x-0">
+                <Settings size={14} className="text-white" />
+              </div>
+            </Link>
+            
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-1"></div>
+            
+            <button 
+              onClick={handleLogout}
+              className="flex items-center justify-center gap-2 w-full p-2.5 mt-1 rounded-xl text-sm font-bold text-danger hover:text-white hover:bg-danger/90 transition-all duration-300 relative z-10 overflow-hidden group/logout"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-danger/0 via-danger/20 to-danger/0 translate-x-[-100%] group-hover/logout:translate-x-[100%] transition-transform duration-700"></div>
+              <LogOut size={16} className="transform group-hover/logout:-translate-x-1 transition-transform" /> 
+              Sair da Conta
+            </button>
+          </div>
         </div>
       </aside>
 
