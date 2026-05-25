@@ -85,6 +85,7 @@ export const TeacherCourseBuilder = () => {
       url_video: editLessonData.url_video,
       duracao: parseInt(editLessonData.duracaoMinutos) * 60 || 0
     });
+    alert('Aula salva com sucesso!');
   };
 
   const anyError = createModule.isError || updateModule.isError || deleteModule.isError ||
