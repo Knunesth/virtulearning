@@ -35,7 +35,7 @@ export const AdminFinancials = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Receita Total (mês)',  value: 'R$ 45.231', change: '+12.5%', up: true,  color: '#22c55e', values: REVENUE },
           { label: 'MRR',                  value: 'R$ 45.231', change: '+8.2%',  up: true,  color: '#3b82f6', values: REVENUE.map(v => v * 0.9) },
@@ -121,7 +121,8 @@ export const AdminFinancials = () => {
           <h3 className="text-sm font-bold text-white">Transações Recentes</h3>
           <span className="text-[10px] text-[#52525b]">Últimas 24h</span>
         </div>
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[800px]">
           <thead>
             <tr className="border-b border-[#27272a]">
               {['Usuário', 'Curso', 'Tipo', 'Valor', 'Data'].map((h, i) => (
@@ -145,6 +146,7 @@ export const AdminFinancials = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

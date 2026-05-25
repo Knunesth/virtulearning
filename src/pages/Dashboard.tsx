@@ -52,7 +52,7 @@ export const Dashboard = () => {
   const totalHours = enrollments.reduce((acc, e) => acc + (e.curso.duracao_horas ?? 0), 0);
 
   return (
-    <div className="max-w-[1200px] mx-auto animate-in fade-in duration-500 pb-10">
+    <div className="max-w-[1200px] mx-auto animate-in fade-in duration-500 pb-24 md:pb-10">
       <header className="mb-10">
         <h1 className="text-3xl font-bold text-white mb-2">
           Bem-vindo de volta, {user?.nome?.split(' ')[0] ?? 'Usuário'}! 👋
@@ -61,7 +61,7 @@ export const Dashboard = () => {
       </header>
 
       {/* Stats rápidas */}
-      <div className="grid grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
         <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
             <BookOpen size={20} />

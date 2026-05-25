@@ -100,7 +100,7 @@ export const MyCourses = () => {
       </div>
 
       {/* Course Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {displayedCourses.length > 0 ? (
           displayedCourses.map((enrollment: any) => (
             <CourseCard

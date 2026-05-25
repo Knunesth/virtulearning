@@ -186,7 +186,7 @@ export const WatchCourse = () => {
           </div>
 
           {/* TABS MENU */}
-          <div className="mt-6 md:mt-8 px-6 md:px-12 flex items-center gap-8 shrink-0 border-b border-white/5 relative z-20">
+          <div className="mt-6 md:mt-8 px-6 md:px-12 flex items-center gap-8 shrink-0 border-b border-white/5 relative z-20 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <button 
               onClick={() => setActiveTab('visao_geral')}
               className={`py-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'visao_geral' ? 'border-accent text-accent' : 'border-transparent text-gray-500 hover:text-gray-300'}`}

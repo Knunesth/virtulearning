@@ -48,7 +48,7 @@ export const AdminCourses = () => {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20 space-y-6">
+    <div className="animate-in fade-in duration-500 pb-24 md:pb-20 space-y-6">
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white mb-1">Cursos</h1>
@@ -57,7 +57,7 @@ export const AdminCourses = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, i) => (
           <div key={i} className={`flex items-center gap-3 rounded-xl px-4 py-3.5 border ${s.bg}`}>
             <div>
@@ -70,8 +70,8 @@ export const AdminCourses = () => {
 
       {/* Table */}
       <div className="bg-[#121214] border border-[#27272a] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#27272a] flex items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
+        <div className="px-5 py-4 border-b border-[#27272a] flex flex-col md:flex-row items-center gap-4">
+          <div className="relative w-full md:flex-1 max-w-none md:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#52525b]" size={15} />
             <input
               type="text"
@@ -81,12 +81,12 @@ export const AdminCourses = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex items-center gap-1.5 w-full md:w-auto md:ml-auto overflow-x-auto pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden">
             {['todos', 'publicado', 'rascunho', 'suspenso', 'arquivado'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-all border ${filter === f ? 'bg-[#27272a] text-white border-[#3f3f46]' : 'text-[#71717a] border-transparent hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all border whitespace-nowrap ${filter === f ? 'bg-[#27272a] text-white border-[#3f3f46]' : 'text-[#71717a] border-transparent hover:text-white'}`}
               >
                 {f === 'todos' ? 'Todos' : f}
               </button>
@@ -106,7 +106,8 @@ export const AdminCourses = () => {
           </div>
         ) : (
           <>
-            <table className="w-full text-left">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[800px]">
               <thead>
                 <tr className="border-b border-[#27272a]">
                   {['Curso', 'Instrutor', 'Alunos', 'Módulos', 'Preço', 'Status', 'Ações'].map((h, i) => (
@@ -173,6 +174,7 @@ export const AdminCourses = () => {
                 })}
               </tbody>
             </table>
+          </div>
 
             {filtered.length === 0 && (
               <div className="py-16 text-center text-[#52525b] text-sm">Nenhum curso encontrado.</div>

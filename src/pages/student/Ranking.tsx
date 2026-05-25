@@ -116,7 +116,7 @@ export const Ranking = () => {
 
       {/* Lista do Restante (ou tudo se não for pag 1) */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg animate-in fade-in duration-700 delay-300 mb-8">
-        <div className="grid grid-cols-12 gap-4 p-4 border-b border-border text-xs font-bold text-muted uppercase tracking-wider bg-bg/50">
+        <div className="hidden md:grid md:grid-cols-12 gap-4 p-4 border-b border-border text-xs font-bold text-muted uppercase tracking-wider bg-bg/50">
           <div className="col-span-2 text-center">Posição</div>
           <div className="col-span-7">Aluno</div>
           <div className="col-span-3 text-right">XP</div>
@@ -128,20 +128,20 @@ export const Ranking = () => {
             const rankPos = page === 1 ? index + 4 : ((page - 1) * 20) + index + 1;
             
             return (
-              <div key={student.id} className={`grid grid-cols-12 gap-4 p-4 items-center transition-colors hover:bg-bg/50 ${isMe ? 'bg-accent/5' : ''}`}>
-                <div className="col-span-2 text-center font-bold text-muted text-lg">
+              <div key={student.id} className={`flex md:grid md:grid-cols-12 gap-4 p-4 items-center transition-colors hover:bg-bg/50 ${isMe ? 'bg-accent/5' : ''}`}>
+                <div className="flex-shrink-0 md:col-span-2 text-center font-bold text-muted text-lg min-w-[3rem]">
                   #{rankPos}
                 </div>
-                <div className="col-span-7 flex items-center gap-3">
+                <div className="flex-1 md:col-span-7 flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isMe ? 'bg-accent text-black' : 'bg-border text-muted'}`}>
                     {getAvatarLetter(student.nome)}
                   </div>
-                  <span className={`font-medium ${isMe ? 'text-accent font-bold' : 'text-white'}`}>
+                  <span className={`font-medium truncate max-w-[120px] sm:max-w-none ${isMe ? 'text-accent font-bold' : 'text-white'}`}>
                     {student.nome} {isMe && '(Você)'}
                   </span>
                 </div>
-                <div className="col-span-3 text-right font-medium text-white">
-                  {student.xp.toLocaleString()}
+                <div className="flex-shrink-0 md:col-span-3 text-right font-medium text-white">
+                  {student.xp.toLocaleString()} <span className="md:hidden text-muted text-xs ml-1">XP</span>
                 </div>
               </div>
             );

@@ -75,20 +75,20 @@ export const AdminUsers = () => {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20 space-y-6">
+    <div className="animate-in fade-in duration-500 pb-24 md:pb-20 space-y-6">
       {/* Header */}
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white mb-1">Usuários</h1>
           <p className="text-[#71717a] text-sm">Gerencie e edite os cargos de cada conta da plataforma.</p>
         </div>
-        <button className="flex items-center gap-2 bg-[#27272a] hover:bg-[#3f3f46] text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors border border-[#3f3f46]">
+        <button className="flex items-center justify-center gap-2 bg-[#27272a] hover:bg-[#3f3f46] text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors border border-[#3f3f46] w-full sm:w-auto">
           <UserCog size={16} /> Convidar Admin
         </button>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s, i) => (
           <div key={i} className="bg-[#121214] border border-[#27272a] rounded-xl p-4 flex items-center gap-3">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${s.bg} ${s.color}`}>
@@ -105,8 +105,8 @@ export const AdminUsers = () => {
       {/* Table Card */}
       <div className="bg-[#121214] border border-[#27272a] rounded-xl overflow-hidden">
         {/* Toolbar */}
-        <div className="px-5 py-4 border-b border-[#27272a] flex items-center gap-3">
-          <div className="relative flex-1 max-w-xs">
+        <div className="px-5 py-4 border-b border-[#27272a] flex flex-col md:flex-row items-center gap-4">
+          <div className="relative w-full md:flex-1 max-w-none md:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#52525b]" size={15} />
             <input
               type="text"
@@ -117,12 +117,12 @@ export const AdminUsers = () => {
             />
           </div>
 
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex items-center gap-1.5 w-full md:w-auto md:ml-auto overflow-x-auto pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden">
             {['todos', 'aluno', 'professor', 'admin'].map((role) => (
               <button
                 key={role}
                 onClick={() => { setRoleFilter(role); setPage(1); }}
-                className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-all border ${
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all border whitespace-nowrap ${
                   roleFilter === role
                     ? 'bg-[#27272a] text-white border-[#3f3f46]'
                     : 'text-[#71717a] border-transparent hover:text-white hover:border-[#27272a]'
@@ -147,7 +147,8 @@ export const AdminUsers = () => {
           </div>
         ) : (
           <>
-            <table className="w-full text-left">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[800px]">
               <thead>
                 <tr className="border-b border-[#27272a]">
                   <th className="px-5 py-3 text-[10px] font-bold text-[#52525b] uppercase tracking-widest">Usuário</th>
@@ -243,6 +244,7 @@ export const AdminUsers = () => {
                 })}
               </tbody>
             </table>
+          </div>
 
             {users.length === 0 && (
               <div className="py-16 text-center text-[#52525b] text-sm">Nenhum usuário encontrado.</div>

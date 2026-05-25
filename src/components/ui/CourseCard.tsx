@@ -27,7 +27,7 @@ export const CourseCard = ({
   modules,
   price,
   progress,
-  className = "w-[300px] shrink-0",
+  className = "w-[280px] sm:w-[300px] shrink-0",
   previewMode = false
 }: CourseCardProps) => {
   return (

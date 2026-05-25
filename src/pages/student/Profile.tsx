@@ -121,7 +121,7 @@ export const Profile = () => {
   };
 
   return (
-    <div className="max-w-[800px] mx-auto animate-in fade-in duration-500 pb-10">
+    <div className="max-w-[800px] mx-auto animate-in fade-in duration-500 pb-24 md:pb-10">
       
       <header className="mb-10 flex items-center justify-between">
         <div>

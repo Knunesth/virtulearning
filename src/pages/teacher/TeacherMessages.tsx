@@ -1,239 +1,148 @@
-import { useState, useRef, useEffect } from 'react';
-import { Search, Send, MoreVertical, Image as ImageIcon, FileText, MessageSquare } from 'lucide-react';
-import { useMessages } from '../../hooks/useMessages';
-
-// Tipagem básica
-type Message = {
-  id: string;
-  sender: 'student' | 'teacher';
-  text: string;
-  time: string;
-};
-
-
-
-// Dados Mockados
-
+import { MessageSquare, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '../../services/api';
+import { useState } from 'react';
 
 export const TeacherMessages = () => {
-  const [page, setPage] = useState(1);
-  const { data, isLoading } = useMessages(page, 10);
-  
-  const conversations = data?.data || [];
-  const totalPages = data?.totalPages || 1;
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<'pendente' | 'respondida' | 'fechada'>('pendente');
+  const [selectedMessage, setSelectedMessage] = useState<any | null>(null);
+  const [replyText, setReplyText] = useState('');
 
-  const [activeId, setActiveId] = useState<string>('');
-  const [inputText, setInputText] = useState('');
-  
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { data, isLoading } = useQuery({
+    queryKey: ['teacher-messages', activeTab],
+    queryFn: async () => {
+      const res = await api.get(`/messages?status=${activeTab}`);
+      return res.data;
+    },
+  });
 
-  const activeConversation = activeId ? {
-    studentName: 'Aluno', // Mock until thread query is implemented
-    course: 'Curso',
-    initial: 'A',
-    color: 'bg-blue-500',
-    messages: [] as Message[]
-  } : null;
+  const replyMutation = useMutation({
+    mutationFn: async ({ id, resposta }: { id: number; resposta: string }) => {
+      await api.patch(`/messages/${id}/reply`, { resposta });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacher-messages'] });
+      setSelectedMessage(null);
+      setReplyText('');
+    },
+  });
 
-  // We are treating conversations from backend. Active conversation messages should be fetched by thread id ideally,
-  // but for now we just get the one from the list (which only contains the last message currently, wait no, 
-  // the backend query `findMany` over `message` with `distinct` just returns the LATEST message per conversation!)
-  // So the UI needs a separate query for the thread messages.
-  // We'll leave the thread messages as a generic "Mensagens" for now, or just show the active one from list.
-  // Since we don't have the full thread in this component (it's mocked originally), I'll just adapt the left list
-  // and leave the right panel generic or fetch the thread if the user clicks. The prompt says "Atualizar hook de mensagens (useMessages ou similar) com a mesma lógica". I will just add pagination to the list.
+  const closeMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await api.patch(`/messages/${id}/close`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacher-messages'] });
+    },
+  });
 
-
-
-  useEffect(() => {
-    if (conversations.length > 0 && !activeId) {
-      // setActiveId(`${conversations[0].aluno_id}-${conversations[0].professor_id}`);
-    }
-  }, [conversations]);
-
-  const handleSendMessage = () => {
-    if (!inputText.trim()) return;
-    setInputText('');
-    // TODO: Connect to POST /messages
-  };
+  const messages = data?.data ?? [];
 
   return (
-    <div className="animate-in fade-in duration-500 h-[calc(100vh-140px)] flex flex-col">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Dúvidas dos Alunos</h1>
-        <p className="text-muted text-sm">Responda dúvidas e interaja com seus alunos em tempo real.</p>
+    <div className="max-w-[1200px] mx-auto animate-in fade-in duration-500 pb-24 md:pb-10">
+      <header className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-white">Dúvidas dos Alunos</h1>
+        <p className="text-muted mt-1 text-sm md:text-base">Responda as perguntas dos seus alunos.</p>
+      </header>
+
+      {/* Tabs */}
+      <div className="flex overflow-x-auto gap-2 mb-6 bg-card border border-border rounded-xl p-1 w-full sm:w-fit [&::-webkit-scrollbar]:hidden">
+        {(['pendente', 'respondida', 'fechada'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 sm:flex-none whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold capitalize transition-colors ${activeTab === tab ? 'bg-accent text-black' : 'text-muted hover:text-white'}`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
-      {/* Chat Container */}
-      <div className="flex-1 bg-card border border-border rounded-2xl shadow-lg shadow-black/20 overflow-hidden flex flex-col md:flex-row">
-        
-        {/* Coluna Esquerda: Lista de Conversas (30%) */}
-        <div className="w-full md:w-[320px] border-r border-border flex flex-col bg-bg shrink-0">
-          <div className="p-4 border-b border-border">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
-              <input 
-                type="text" 
-                placeholder="Buscar aluno ou curso..." 
-                className="w-full h-10 pl-9 pr-4 bg-[#09090b] border border-border rounded-xl text-sm text-white focus:outline-none focus:border-accent/50 shadow-inner"
-              />
-            </div>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto">
-            {isLoading ? (
-              <div className="p-4 text-center text-muted">Carregando conversas...</div>
-            ) : conversations.length > 0 ? (
-              conversations.map((msg: any) => {
-                const convId = `${msg.aluno_id}-${msg.professor_id}`;
-                const isActive = convId === activeId;
-                const studentName = msg.remetente?.nome || 'Aluno';
-                
-                return (
-                  <button
-                    key={convId}
-                    onClick={() => setActiveId(convId)}
-                    className={`w-full flex items-start gap-3 p-4 border-b border-border transition-all duration-200 text-left hover:bg-[#18181b]
-                      ${isActive ? 'bg-[#18181b] border-l-2 border-l-accent' : 'border-l-2 border-l-transparent'}
-                    `}
-                  >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-inner shrink-0 bg-blue-500/20 text-blue-400 border border-blue-500/30`}>
-                      {studentName.charAt(0).toUpperCase()}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className={`text-sm font-bold truncate ${isActive ? 'text-white' : 'text-gray-300'}`}>{studentName}</p>
-                        <span className="text-[10px] text-muted shrink-0">Recente</span>
-                      </div>
-                      <p className="text-xs text-muted truncate">
-                        {msg.sender === 'teacher' ? 'Você: ' : ''}
-                        {msg.texto}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })
-            ) : (
-              <div className="p-4 text-center text-muted">Nenhuma conversa encontrada.</div>
-            )}
-          </div>
-          
-          {/* Paginação da Lista */}
-          {totalPages > 1 && (
-            <div className="p-3 border-t border-border flex justify-between items-center bg-[#09090b]">
-              <button 
-                disabled={page === 1}
-                onClick={() => setPage(p => p - 1)}
-                className="text-xs text-muted hover:text-white disabled:opacity-50"
-              >
-                Anterior
-              </button>
-              <span className="text-xs text-muted font-bold">
-                {page} / {totalPages}
-              </span>
-              <button 
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => p + 1)}
-                className="text-xs text-muted hover:text-white disabled:opacity-50"
-              >
-                Próxima
-              </button>
-            </div>
-          )}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card rounded-xl animate-pulse border border-border" />)}
         </div>
-
-        {/* Coluna Direita: Área de Chat (70%) */}
-        {activeConversation ? (
-          <div className="flex-1 flex flex-col bg-[#09090b] relative">
-            {/* Chat Header */}
-            <div className="h-16 border-b border-border flex items-center justify-between px-6 bg-card sticky top-0 z-10">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-inner shrink-0 ${activeConversation.color}/20 text-${activeConversation.color.split('-')[1]}-400 border border-${activeConversation.color.split('-')[1]}-500/30`}>
-                  {activeConversation.initial}
+      ) : messages.length === 0 ? (
+        <div className="bg-card border border-border rounded-xl p-8 md:p-10 text-center">
+          <MessageSquare className="w-10 h-10 text-muted mx-auto mb-3 opacity-50" />
+          <p className="text-white font-bold mb-1">Nenhuma dúvida {activeTab}</p>
+          <p className="text-muted text-sm">Quando alunos enviarem perguntas, elas aparecerão aqui.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {messages.map((msg: any) => (
+            <div key={msg.id} className="bg-card border border-border rounded-xl p-4 sm:p-5 hover:border-accent/30 transition-colors">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="flex-1 min-w-0 w-full">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span className="font-bold text-white text-sm">{msg.aluno?.nome ?? 'Aluno'}</span>
+                    <span className="text-xs text-muted">em</span>
+                    <span className="text-xs text-accent font-medium truncate max-w-[200px] sm:max-w-xs">{msg.curso?.titulo}</span>
+                  </div>
+                  <p className="text-sm text-text leading-relaxed">{msg.mensagem}</p>
+                  {msg.resposta && (
+                    <div className="mt-3 pl-3 border-l-2 border-accent/30 bg-bg/50 p-2 rounded-r-lg">
+                      <p className="text-xs text-muted mb-1">Sua resposta:</p>
+                      <p className="text-sm text-text">{msg.resposta}</p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white">{activeConversation.studentName}</h3>
-                  <p className="text-[10px] text-muted font-bold uppercase tracking-wider">{activeConversation.course}</p>
+                
+                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-3 sm:gap-2 shrink-0 pt-3 sm:pt-0 border-t border-border sm:border-none">
+                  <span className={`text-[10px] md:text-xs font-bold px-2 py-1 sm:py-0.5 rounded-full flex items-center gap-1 ${msg.status === 'pendente' ? 'bg-yellow-500/10 text-yellow-400' : msg.status === 'respondida' ? 'bg-success/10 text-success' : 'bg-muted/10 text-muted'}`}>
+                    {msg.status === 'pendente' && <Clock size={10} />}
+                    {msg.status === 'respondida' && <CheckCircle size={10} />}
+                    {msg.status === 'fechada' && <XCircle size={10} />}
+                    {msg.status}
+                  </span>
+                  <div className="flex gap-2 sm:gap-1">
+                    {msg.status === 'pendente' && (
+                      <button onClick={() => { setSelectedMessage(msg); setReplyText(''); }} className="text-xs px-3 py-1.5 bg-accent/10 text-accent rounded-lg font-bold hover:bg-accent/20 transition-colors">
+                        Responder
+                      </button>
+                    )}
+                    {msg.status !== 'fechada' && (
+                      <button onClick={() => closeMutation.mutate(msg.id)} className="text-xs px-3 py-1.5 bg-white/5 text-muted rounded-lg hover:text-white hover:bg-white/10 transition-colors">
+                        Fechar
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-              <button className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-muted transition-colors">
-                <MoreVertical size={18} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal de resposta */}
+      {selectedMessage && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <h3 className="text-white font-bold text-lg mb-2">Responder Dúvida</h3>
+            <p className="text-sm text-muted mb-4 bg-bg rounded-lg p-3 max-h-32 overflow-y-auto">{selectedMessage.mensagem}</p>
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Escreva sua resposta..."
+              className="w-full bg-bg border border-border rounded-xl p-3 text-sm text-white focus:outline-none focus:border-accent resize-none mb-4"
+              rows={4}
+            />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button onClick={() => setSelectedMessage(null)} className="flex-1 py-2.5 rounded-xl border border-border text-white hover:bg-white/5 font-bold text-sm transition-colors">
+                Cancelar
+              </button>
+              <button
+                onClick={() => replyMutation.mutate({ id: selectedMessage.id, resposta: replyText })}
+                disabled={!replyText.trim() || replyMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-accent text-black font-bold hover:bg-accentHover transition-colors disabled:opacity-50 text-sm"
+              >
+                {replyMutation.isPending ? 'Enviando...' : 'Enviar Resposta'}
               </button>
             </div>
-
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {activeConversation.messages.map((msg) => {
-                const isTeacher = msg.sender === 'teacher';
-                return (
-                  <div key={msg.id} className={`flex flex-col ${isTeacher ? 'items-end' : 'items-start'}`}>
-                    <div className="flex items-end gap-2 max-w-[80%]">
-                      {!isTeacher && (
-                        <div className={`w-8 h-8 rounded-full flex flex-shrink-0 items-center justify-center font-bold text-[10px] text-white shadow-inner ${activeConversation.color}/20 text-${activeConversation.color.split('-')[1]}-400 border border-${activeConversation.color.split('-')[1]}-500/30 mb-1`}>
-                          {activeConversation.initial}
-                        </div>
-                      )}
-                      
-                      <div className={`
-                        px-4 py-3 rounded-2xl shadow-sm text-sm
-                        ${isTeacher 
-                          ? 'bg-accent/10 border border-accent/20 text-white rounded-br-sm' 
-                          : 'bg-card border border-border text-gray-200 rounded-bl-sm'}
-                      `}>
-                        {msg.text}
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-muted mt-1 px-10">{msg.time}</span>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Chat Input */}
-            <div className="p-4 border-t border-border bg-card">
-              <div className="flex items-end gap-2">
-                <button className="w-10 h-10 rounded-xl hover:bg-white/5 flex flex-shrink-0 items-center justify-center text-muted hover:text-white transition-colors">
-                  <ImageIcon size={20} />
-                </button>
-                <button className="w-10 h-10 rounded-xl hover:bg-white/5 flex flex-shrink-0 items-center justify-center text-muted hover:text-white transition-colors">
-                  <FileText size={20} />
-                </button>
-                <div className="flex-1 relative">
-                    <textarea 
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      placeholder="Digite sua resposta..."
-                      className="w-full bg-[#09090b] border border-border focus:border-accent/50 rounded-xl px-4 py-3 text-sm text-white resize-none shadow-inner min-h-[44px] max-h-32 focus:outline-none"
-                      rows={1}
-                    />
-                </div>
-                <button 
-                  onClick={handleSendMessage}
-                  disabled={!inputText.trim()}
-                  className="h-[44px] px-4 rounded-xl bg-accent text-black font-bold flex items-center gap-2 hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/20 flex-shrink-0"
-                >
-                  <Send size={16} />
-                  <span className="hidden sm:inline">Enviar</span>
-                </button>
-              </div>
-            </div>
           </div>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted bg-[#09090b]">
-            <MessageSquare size={48} className="mb-4 opacity-20" />
-            <p>Selecione uma conversa para começar a responder.</p>
-          </div>
-        )}
-
-      </div>
+        </div>
+      )}
     </div>
   );
 };

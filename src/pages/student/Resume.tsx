@@ -19,7 +19,7 @@ export const Resume = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto animate-in fade-in duration-500 pb-10">
+    <div className="max-w-[1400px] mx-auto animate-in fade-in duration-500 pb-24 md:pb-10">
       
       <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
         <div>

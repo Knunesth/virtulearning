@@ -64,7 +64,7 @@ export const CourseDetail = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-12 animate-in fade-in duration-500">
+    <div className="max-w-5xl mx-auto space-y-8 pb-24 md:pb-12 animate-in fade-in duration-500">
       
       {/* HEADER HERO */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg relative">

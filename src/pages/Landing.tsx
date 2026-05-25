@@ -109,7 +109,12 @@ export const Landing = () => {
           100% { transform: translateX(-50%); }
         }
         .animate-marquee {
-          animation: marquee 30s linear infinite;
+          animation: marquee 60s linear infinite;
+        }
+        @media (min-width: 768px) {
+          .animate-marquee {
+            animation: marquee 30s linear infinite;
+          }
         }
       `}</style>
 
@@ -128,7 +133,7 @@ export const Landing = () => {
           </div>
 
           {/* Headline principal */}
-          <h1 className="text-[2.2rem] leading-[1.15] sm:text-5xl md:text-7xl lg:text-8xl font-extrabold text-white mb-4 sm:mb-6 tracking-tighter w-full px-2 sm:px-0 mx-auto">
+          <h1 className="text-4xl leading-[1.15] md:text-7xl lg:text-8xl font-extrabold text-white mb-4 sm:mb-6 tracking-tighter w-full px-2 sm:px-0 mx-auto">
             A plataforma definitiva para{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-yellow-300 to-orange-500 filter drop-shadow-[0_0_20px_rgba(255,215,0,0.3)]">
               ensinar e aprender.
@@ -405,14 +410,14 @@ export const Landing = () => {
             <div key={idx} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-300 hover:bg-white/[0.07] hover:border-accent/30 hover:shadow-lg">
               <button
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full px-5 sm:px-8 py-4 sm:py-6 flex items-center justify-between text-left focus:outline-none"
+                className="w-full px-3 sm:px-8 py-3 sm:py-6 flex items-center justify-between text-left focus:outline-none"
               >
                 <span className="text-sm sm:text-base md:text-lg font-bold text-white pr-3">{faq.q}</span>
                 <ChevronDown size={20} className={`text-accent transition-transform duration-500 flex-shrink-0 sm:w-6 sm:h-6 ${openFaq === idx ? 'rotate-180' : ''}`} />
               </button>
               <div
-                className={`px-5 sm:px-8 overflow-hidden transition-all duration-500 ease-in-out ${
-                  openFaq === idx ? 'max-h-60 pb-5 sm:pb-8 opacity-100' : 'max-h-0 opacity-0'
+                className={`px-3 sm:px-8 overflow-hidden transition-all duration-500 ease-in-out ${
+                  openFaq === idx ? 'max-h-60 pb-3 sm:pb-8 opacity-100' : 'max-h-0 opacity-0'
                 }`}
               >
                 <p className="text-[#a1a1aa] leading-relaxed text-sm sm:text-base md:text-lg">{faq.a}</p>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, BookOpen, SlidersHorizontal, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, BookOpen, SlidersHorizontal, Loader2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { CourseCard } from '../components/ui/CourseCard';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -25,6 +25,7 @@ export const Catalog = () => {
   const [level, setLevel] = useState('Todos');
   const [priceType, setPriceType] = useState('Todos');
   const [page, setPage] = useState(1);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -86,51 +87,61 @@ export const Catalog = () => {
         {/* Sidebar de Filtros — apenas autenticados */}
         {isAuthenticated && (
           <aside className="w-full lg:w-72 shrink-0">
-            <div className="bg-card border border-border rounded-xl p-6 sticky top-6 shadow-lg">
-              <div className="flex items-center gap-2 mb-8 text-text font-bold text-lg border-b border-border pb-4">
-                <SlidersHorizontal size={20} className="text-accent" />
-                Filtros
-              </div>
-
-              {/* Nível */}
-              <div className="mb-8">
-                <h3 className="font-semibold text-text mb-4 text-xs uppercase tracking-wider">Nível</h3>
-                <div className="space-y-3">
-                  {LEVELS.map((lvl) => (
-                    <label key={lvl} className="flex items-center gap-3 cursor-pointer group">
-                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${level === lvl ? 'border-accent' : 'border-muted group-hover:border-accent'}`}>
-                        {level === lvl && <div className="w-2.5 h-2.5 bg-accent rounded-full" />}
-                      </div>
-                      <span className={`text-sm transition-colors ${level === lvl ? 'text-white font-medium' : 'text-muted group-hover:text-white'}`}>
-                        {LEVEL_LABELS[lvl]}
-                      </span>
-                      <input type="radio" name="level" value={lvl} checked={level === lvl} onChange={() => setLevel(lvl)} className="hidden" />
-                    </label>
-                  ))}
+            <div className="bg-card border border-border rounded-xl p-5 sm:p-6 sticky top-6 shadow-lg">
+              <button 
+                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                className="w-full flex items-center justify-between text-text font-bold text-lg lg:cursor-default lg:pointer-events-none border-b lg:border-border border-transparent pb-0 lg:pb-4"
+              >
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal size={20} className="text-accent" />
+                  Filtros
                 </div>
-              </div>
-
-              {/* Preço */}
-              <div>
-                <h3 className="font-semibold text-text mb-4 text-xs uppercase tracking-wider">Preço</h3>
-                <div className="space-y-3">
-                  {PRICES.map((price) => (
-                    <label key={price} className="flex items-center gap-3 cursor-pointer group">
-                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${priceType === price ? 'border-accent' : 'border-muted group-hover:border-accent'}`}>
-                        {priceType === price && <div className="w-2.5 h-2.5 bg-accent rounded-full" />}
-                      </div>
-                      <span className={`text-sm transition-colors ${priceType === price ? 'text-white font-medium' : 'text-muted group-hover:text-white'}`}>{price}</span>
-                      <input type="radio" name="price" value={price} checked={priceType === price} onChange={() => setPriceType(price)} className="hidden" />
-                    </label>
-                  ))}
+                <div className="lg:hidden text-muted">
+                  {isFiltersOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </div>
-              </div>
+              </button>
 
-              {hasActiveFilters && (
-                <button onClick={clearFilters} className="mt-8 w-full py-2.5 rounded-lg border border-border text-muted hover:text-white hover:bg-bg transition-colors text-sm font-medium">
-                  Limpar Filtros
-                </button>
-              )}
+              <div className={`mt-6 lg:mt-0 lg:block ${isFiltersOpen ? 'block' : 'hidden'}`}>
+                {/* Nível */}
+                <div className="mb-8 pt-4 lg:pt-0 border-t border-border lg:border-t-0">
+                  <h3 className="font-semibold text-text mb-4 text-xs uppercase tracking-wider">Nível</h3>
+                  <div className="space-y-3">
+                    {LEVELS.map((lvl) => (
+                      <label key={lvl} className="flex items-center gap-3 cursor-pointer group">
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${level === lvl ? 'border-accent' : 'border-muted group-hover:border-accent'}`}>
+                          {level === lvl && <div className="w-2.5 h-2.5 bg-accent rounded-full" />}
+                        </div>
+                        <span className={`text-sm transition-colors ${level === lvl ? 'text-white font-medium' : 'text-muted group-hover:text-white'}`}>
+                          {LEVEL_LABELS[lvl]}
+                        </span>
+                        <input type="radio" name="level" value={lvl} checked={level === lvl} onChange={() => setLevel(lvl)} className="hidden" />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preço */}
+                <div>
+                  <h3 className="font-semibold text-text mb-4 text-xs uppercase tracking-wider">Preço</h3>
+                  <div className="space-y-3">
+                    {PRICES.map((price) => (
+                      <label key={price} className="flex items-center gap-3 cursor-pointer group">
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${priceType === price ? 'border-accent' : 'border-muted group-hover:border-accent'}`}>
+                          {priceType === price && <div className="w-2.5 h-2.5 bg-accent rounded-full" />}
+                        </div>
+                        <span className={`text-sm transition-colors ${priceType === price ? 'text-white font-medium' : 'text-muted group-hover:text-white'}`}>{price}</span>
+                        <input type="radio" name="price" value={price} checked={priceType === price} onChange={() => setPriceType(price)} className="hidden" />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {hasActiveFilters && (
+                  <button onClick={clearFilters} className="mt-8 w-full py-2.5 rounded-lg border border-border text-muted hover:text-white hover:bg-bg transition-colors text-sm font-medium">
+                    Limpar Filtros
+                  </button>
+                )}
+              </div>
             </div>
           </aside>
         )}

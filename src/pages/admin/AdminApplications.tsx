@@ -43,7 +43,7 @@ export const AdminApplications = () => {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20 space-y-6 max-w-4xl">
+    <div className="animate-in fade-in duration-500 pb-24 md:pb-20 space-y-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
@@ -61,7 +61,7 @@ export const AdminApplications = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { label: 'Aguardando análise', value: pending.length, color: 'text-warning', bg: 'bg-warning/10 border-warning/20', icon: <Clock size={15} /> },
           { label: 'Aprovados', value: approvedCount, color: 'text-success', bg: 'bg-success/10 border-success/20', icon: <CheckCircle size={15} /> },
@@ -101,13 +101,13 @@ export const AdminApplications = () => {
               >
                 {/* Card Header */}
                 <div
-                  className="px-6 py-5 flex items-center gap-5 cursor-pointer hover:bg-[#18181b] transition-colors"
+                  className="px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 cursor-pointer hover:bg-[#18181b] transition-colors"
                   onClick={() => setExpanded(isOpen ? null : String(app.id))}
                 >
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradColor} flex items-center justify-center text-white text-lg font-bold shadow-lg shrink-0`}>
                     {app.solicitante.nome.charAt(0)}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 w-full">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-base font-bold text-white">{app.solicitante.nome}</h3>
                       <span className="text-[10px] text-[#52525b]">•</span>
@@ -127,7 +127,7 @@ export const AdminApplications = () => {
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto mt-2 sm:mt-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => setRejectingId(String(app.id))}
                       disabled={review.isPending}
@@ -178,7 +178,7 @@ export const AdminApplications = () => {
 
                 {/* Expanded Detail */}
                 {isOpen && (
-                  <div className="border-t border-[#27272a] px-6 py-5 grid grid-cols-2 gap-8 bg-[#0d0d0f]">
+                  <div className="border-t border-[#27272a] px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#0d0d0f]">
                     <div>
                       <p className="text-[10px] font-bold text-[#52525b] uppercase tracking-widest mb-2">Sobre o Candidato</p>
                       <p className="text-sm text-[#a1a1aa] leading-relaxed">{app.bio}</p>

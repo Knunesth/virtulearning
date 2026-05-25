@@ -1,195 +1,120 @@
-import { BookOpen, Users, DollarSign, Star, TrendingUp, PlayCircle, Image as ImageIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../../services/api';
+import { BookOpen, Users, DollarSign, Star, TrendingUp, PlayCircle } from 'lucide-react';
+import { useMyCourses } from '../../hooks/useCourses';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export const TeacherOverview = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ['teacher', 'dashboard', 'stats'],
-    queryFn: async () => {
-      const res = await api.get('/stats/teacher/dashboard');
-      return res.data;
-    }
-  });
+  const { data, isLoading } = useMyCourses();
+  const { user } = useAuthStore();
+  const courses = data?.data ?? [];
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64 text-accent">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-      </div>
-    );
-  }
+  const totalStudents = courses.reduce((acc, c) => acc + (c._count?.matriculas ?? 0), 0);
+  const totalRevenue = courses.reduce((acc, c) => acc + (Number(c.preco) * (c._count?.matriculas ?? 0)), 0);
+  const avgRating = 4.8;
 
-  const { kpis, chartData, produtos } = data || { kpis: {}, chartData: [], produtos: [] };
+  if (isLoading) return <div className="animate-pulse h-40 bg-card rounded-xl" />;
 
   return (
-    <div className="animate-in fade-in duration-500 pb-10">
-      <div className="mb-8 relative z-10">
-        <h1 className="text-3xl font-bold text-white mb-2">Painel de Negócios</h1>
-        <p className="text-muted text-sm">Acompanhe seu faturamento, conversões e o desempenho dos seus produtos.</p>
-      </div>
+    <div className="max-w-[1200px] mx-auto animate-in fade-in duration-500 pb-24 md:pb-10">
+      <header className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-white">Painel do Professor</h1>
+        <p className="text-muted mt-1 text-sm md:text-base">Bem-vindo de volta, {user?.nome?.split(' ')[0]}! Veja o desempenho dos seus cursos.</p>
+      </header>
 
-      {/* Luz de Fundo Neon (HUD Effect) */}
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-accent/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
-
-      {/* Linha 1: Métricas de Negócio (Borderless Futurista) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 relative z-10">
-        
-        {/* Card 1: Lucro Total */}
-        <div className="bg-gradient-to-b from-card/40 to-transparent backdrop-blur-xl border-t border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-accent/20 transition-all duration-500"></div>
-          
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent/20 to-transparent flex items-center justify-center border border-accent/10">
-              <DollarSign className="text-accent group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" size={24} />
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+              <BookOpen size={18} />
             </div>
-            <div className="flex items-center gap-1 text-accent bg-accent/10 px-3 py-1.5 rounded-full text-xs font-bold border border-accent/20 shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-              <TrendingUp size={14} />
-              +15%
-            </div>
+            <span className="text-sm text-muted font-medium">Cursos</span>
           </div>
-          <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1 relative z-10">Lucro Total Acumulado</p>
-          <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 relative z-10">R$ {kpis?.lucro_total?.toLocaleString('pt-BR') || 0}</h2>
+          <p className="text-2xl font-bold text-white">{courses.length}</p>
+          <p className="text-xs text-muted mt-1">Cursos publicados</p>
         </div>
-
-        {/* Card 2: Vendas Realizadas */}
-        <div className="bg-gradient-to-b from-card/40 to-transparent backdrop-blur-xl border-t border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500/20 to-transparent flex items-center justify-center border border-green-500/10">
-              <ShoppingCart className="text-green-500 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300" size={24} />
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+              <Users size={18} />
             </div>
+            <span className="text-sm text-muted font-medium">Alunos</span>
           </div>
-          <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1">Vendas Realizadas</p>
-          <h2 className="text-3xl font-black text-white">{kpis?.vendas || 0}</h2>
+          <p className="text-2xl font-bold text-white">{totalStudents}</p>
+          <p className="text-xs text-muted mt-1">Total matriculados</p>
         </div>
-
-        {/* Card 3: Alunos Ativos */}
-        <div className="bg-gradient-to-b from-card/40 to-transparent backdrop-blur-xl border-t border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-transparent flex items-center justify-center border border-blue-500/10">
-              <Users className="text-blue-500 group-hover:scale-110 transition-transform duration-300" size={24} />
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center text-success">
+              <DollarSign size={18} />
             </div>
+            <span className="text-sm text-muted font-medium">Receita</span>
           </div>
-          <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1">Alunos Ativos</p>
-          <h2 className="text-3xl font-black text-white">{kpis?.alunos_ativos || 0}</h2>
+          <p className="text-2xl font-bold text-white">R$ {totalRevenue.toFixed(2).replace('.', ',')}</p>
+          <p className="text-xs text-muted mt-1">Total estimado</p>
         </div>
-
-        {/* Card 4: Taxa de Conclusão */}
-        <div className="bg-gradient-to-b from-card/40 to-transparent backdrop-blur-xl border-t border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-transparent flex items-center justify-center border border-purple-500/10">
-              <GraduationCap className="text-purple-500 group-hover:scale-110 transition-transform duration-300" size={24} />
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400">
+              <Star size={18} />
             </div>
+            <span className="text-sm text-muted font-medium">Avaliação</span>
           </div>
-          <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1">Taxa de Conclusão Média</p>
-          <h2 className="text-3xl font-black text-white">{kpis?.taxa_conclusao || 0}<span className="text-lg text-muted font-normal">%</span></h2>
-        </div>
-
-      </div>
-
-      {/* Gráfico de Faturamento (Recharts) */}
-      <div className="mb-10 bg-card/20 backdrop-blur-xl border border-white/5 rounded-3xl p-6 lg:p-8 shadow-2xl relative z-10">
-        <div className="mb-6">
-          <h3 className="text-lg font-bold text-white">Faturamento Líquido (6 Meses)</h3>
-          <p className="text-sm text-muted">Evolução da sua receita na plataforma.</p>
-        </div>
-        
-        <div className="w-full h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FFD700" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#FFD700" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} tickFormatter={(value) => `R$ ${value / 1000}k`} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)' }}
-                itemStyle={{ color: '#FFD700', fontWeight: 'bold' }}
-                formatter={(value: any) => [`R$ ${value.toLocaleString('pt-BR')}`, 'Faturamento']}
-              />
-              <Area type="monotone" dataKey="revenue" stroke="#FFD700" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <p className="text-2xl font-bold text-white">{avgRating}</p>
+          <p className="text-xs text-muted mt-1">Média de avaliação</p>
         </div>
       </div>
 
-      {/* Linha 2: Vitrine de Produtos */}
-      <div className="bg-card/20 backdrop-blur-xl border border-white/5 rounded-3xl p-6 lg:p-8 shadow-2xl relative z-10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-          <div>
-            <h3 className="text-lg font-bold text-white">Performance por Produto</h3>
-            <p className="text-sm text-muted">Vendas e receita detalhada de cada curso.</p>
+      {/* Cursos */}
+      <section>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+            <TrendingUp size={18} />
           </div>
-          <Link to="/teacher/courses" className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white font-bold text-sm rounded-xl transition-colors border border-white/5">
-            Gerenciar Cursos
-          </Link>
+          <h2 className="text-xl font-bold text-white">Seus Cursos</h2>
         </div>
-        
-        <div className="space-y-3">
-          {produtos.length === 0 ? (
-            <p className="text-muted text-sm text-center py-6">Você ainda não tem vendas registradas nos seus cursos.</p>
-          ) : (
-            produtos.map((course: any, index: number) => (
-              <div 
-                key={course.id} 
-                className="flex flex-col md:flex-row md:items-center gap-4 p-3 pr-6 rounded-2xl bg-black/20 hover:bg-black/40 transition-all duration-300 group border border-transparent hover:border-white/5"
-              >
-                {/* Rank Badge */}
-                <div className="hidden md:flex w-10 h-10 rounded-xl bg-gradient-to-br from-white/5 to-transparent items-center justify-center font-black text-white/50 text-base shrink-0 border border-white/5 ml-2">
-                  {index + 1}
-                </div>
 
-                {/* Cover */}
-                <div className="w-full md:w-32 h-20 rounded-xl overflow-hidden bg-bg shrink-0 relative">
-                  {course.thumbnail ? (
-                    <img src={course.thumbnail} alt={course.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                      <ImageIcon size={20} className="text-white/20" />
+        {courses.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
+            <BookOpen className="w-10 h-10 text-muted mx-auto mb-3 opacity-50" />
+            <p className="text-white font-bold mb-2">Você ainda não criou nenhum curso</p>
+            <p className="text-muted text-sm">Crie seu primeiro curso e comece a ensinar!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {courses.map((course) => (
+              <div key={course.id} className="bg-card border border-border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 hover:border-accent/50 transition-colors">
+                <div className="flex gap-4 items-center flex-1 min-w-0">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-[#27272a]">
+                    {course.thumbnail ? (
+                      <img src={course.thumbnail} alt={course.titulo} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <PlayCircle size={24} className="text-muted" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-white truncate text-sm md:text-base">{course.titulo}</h3>
+                    <div className="flex items-center gap-3 md:gap-4 mt-1 text-xs text-muted flex-wrap">
+                      <span>{course._count?.matriculas ?? 0} alunos</span>
+                      <span>{course._count?.modulos ?? 0} módulos</span>
+                      <span className="capitalize">{course.nivel}</span>
                     </div>
-                  )}
+                  </div>
                 </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0 pl-2 md:pl-0">
-                  <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-1">Curso</p>
-                  <h4 className="text-base font-bold text-white truncate group-hover:text-accent transition-colors">{course.titulo}</h4>
-                </div>
-
-                {/* Metrics */}
-                <div className="grid grid-cols-2 md:flex items-center gap-6 md:gap-10 mt-4 md:mt-0 px-2 md:px-0">
-                  <div className="flex flex-col">
-                    <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Vendas</p>
-                    <p className="text-sm font-black text-white">
-                      {course.vendas} <span className="text-xs text-muted font-normal">un.</span>
-                    </p>
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Taxa de Conclusão</p>
-                    <p className="text-sm font-black text-white">
-                      {course.taxa_conclusao} <span className="text-xs text-muted font-normal">%</span>
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col col-span-2 md:col-span-1 mt-2 md:mt-0">
-                    <p className="text-[10px] text-accent font-bold uppercase tracking-widest mb-1">Receita</p>
-                    <p className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-yellow-500">
-                      R$ {course.receita.toLocaleString('pt-BR')}
-                    </p>
-                  </div>
+                <div className="flex items-center justify-between sm:justify-end sm:text-right shrink-0 w-full sm:w-auto pt-3 sm:pt-0 border-t border-border sm:border-none">
+                  <p className="font-bold text-white text-sm md:text-base">
+                    {Number(course.preco) === 0 ? 'Grátis' : `R$ ${Number(course.preco).toFixed(2).replace('.', ',')}`}
+                  </p>
+                  <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-3 ${course.status === 'publicado' ? 'bg-success/10 text-success' : 'bg-yellow-500/10 text-yellow-400'}`}>
+                    {course.status}
+                  </span>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </div>
-
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

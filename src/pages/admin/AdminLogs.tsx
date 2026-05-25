@@ -35,7 +35,7 @@ export const AdminLogs = () => {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Ações hoje', value: 3, color: 'text-white', bg: 'bg-[#18181b] border-[#27272a]' },
           { label: 'Aprovações', value: 2, color: 'text-success', bg: 'bg-success/10 border-success/20' },
@@ -58,7 +58,8 @@ export const AdminLogs = () => {
           </button>
         </div>
 
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[800px]">
           <thead>
             <tr className="border-b border-[#27272a]">
               {['ID', 'Ação', 'Alvo', 'Admin', 'Tipo', 'Data'].map(h => (
@@ -95,6 +96,7 @@ export const AdminLogs = () => {
             })}
           </tbody>
         </table>
+        </div>
 
         <div className="px-5 py-3 border-t border-[#27272a] flex items-center justify-between">
           <span className="text-[10px] text-[#52525b]">Mostrando <strong className="text-[#a1a1aa]">10</strong> de <strong className="text-[#a1a1aa]">248</strong> registros</span>

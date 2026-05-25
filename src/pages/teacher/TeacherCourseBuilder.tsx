@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, GripVertical, Plus, PlayCircle, FileText, Layout, Trash2, Edit2, AlertCircle, Save } from 'lucide-react';
+import { ArrowLeft, GripVertical, Plus, PlayCircle, FileText, Layout, Trash2, Edit2, AlertCircle, Save, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -92,17 +92,17 @@ export const TeacherCourseBuilder = () => {
                    createLesson.isError || updateLesson.isError || deleteLesson.isError;
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20">
+    <div className="animate-in fade-in duration-500 pb-24 lg:pb-20">
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-accent/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-white/5 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 border-b border-white/5 pb-6">
         <div className="flex items-center gap-4">
-          <Link to="/teacher/courses" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-muted hover:text-white hover:bg-white/10 transition-colors border border-white/5">
+          <Link to="/teacher/courses" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-muted hover:text-white hover:bg-white/10 transition-colors border border-white/5 shrink-0">
             <ArrowLeft size={20} />
           </Link>
-          <div>
+          <div className="min-w-0">
             <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-1">Construtor de Conteúdo</p>
-            <h1 className="text-2xl font-black text-white">{course.data?.titulo || 'Carregando...'}</h1>
+            <h1 className="text-xl md:text-2xl font-black text-white truncate">{course.data?.titulo || 'Carregando...'}</h1>
           </div>
         </div>
       </div>
@@ -237,18 +237,25 @@ export const TeacherCourseBuilder = () => {
         </div>
 
         {/* Right Column: Editor for Active Lesson */}
-        <div className="lg:col-span-2">
+        <div className={`lg:col-span-2 ${activeLesson ? 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm lg:relative lg:block lg:inset-auto lg:p-0 lg:bg-transparent lg:backdrop-blur-none lg:z-auto' : 'hidden lg:block'}`}>
           {activeLesson ? (
-            <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+            <div className="bg-card/95 lg:bg-card/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-y-auto max-h-[90vh] lg:max-h-none w-full lg:w-auto">
               <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
               
-              <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+              <button 
+                onClick={() => setActiveLessonId(null)}
+                className="lg:hidden absolute top-4 right-4 p-2 rounded-full bg-white/5 text-muted hover:text-white"
+              >
+                <X size={20} />
+              </button>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 border-b border-white/5 pb-6 gap-4">
                 <div>
                   <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2">Editando Aula</p>
-                  <h3 className="text-xl font-bold text-white">{activeLesson.titulo}</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-white leading-tight">{activeLesson.titulo}</h3>
                 </div>
-                <div className="flex items-center gap-2">
-                   <Button onClick={handleSaveLesson} isLoading={updateLesson.isPending} className="font-bold bg-accent text-black hover:bg-yellow-400 shadow-[0_0_15px_rgba(255,215,0,0.2)]">
+                <div className="flex items-center gap-2 shrink-0">
+                   <Button onClick={handleSaveLesson} isLoading={updateLesson.isPending} className="font-bold bg-accent text-black hover:bg-yellow-400 shadow-[0_0_15px_rgba(255,215,0,0.2)] w-full sm:w-auto text-sm">
                      <Save size={16} className="mr-2" /> Salvar Aula
                    </Button>
                 </div>
@@ -266,7 +273,7 @@ export const TeacherCourseBuilder = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-xs font-bold text-muted mb-2 uppercase tracking-wider">Duração (Minutos)</label>
                       <Input 

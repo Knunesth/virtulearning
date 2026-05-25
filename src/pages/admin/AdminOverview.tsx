@@ -87,7 +87,7 @@ const typeColors: Record<string, string> = {
 
 export const AdminOverview = () => {
   return (
-    <div className="animate-in fade-in duration-500 pb-20 space-y-8">
+    <div className="animate-in fade-in duration-500 pb-24 md:pb-20 space-y-8">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
@@ -101,7 +101,7 @@ export const AdminOverview = () => {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((m, i) => (
           <div key={i} className="bg-[#121214] border border-[#27272a] rounded-xl p-5 flex flex-col gap-3 hover:border-[#3f3f46] transition-colors overflow-hidden relative group">
             <div className="flex items-center justify-between">
@@ -192,7 +192,7 @@ export const AdminOverview = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { icon: <ShieldAlert size={18} />, label: '8 aprovações pendentes', sub: 'Candidaturas de professores', to: '/admin/applications', color: '#ef4444' },
           { icon: <Users size={18} />, label: '3 usuários suspensos', sub: 'Aguardando revisão manual', to: '/admin/users', color: '#f59e0b' },

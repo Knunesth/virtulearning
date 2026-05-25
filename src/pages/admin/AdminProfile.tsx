@@ -116,7 +116,7 @@ export const AdminProfile = () => {
         <div className="space-y-6">
           {/* 2FA */}
           <div className="bg-[#121214] border border-[#27272a] rounded-2xl overflow-hidden">
-            <div className="p-6 border-b border-[#27272a] flex items-start justify-between gap-4">
+            <div className="p-6 border-b border-[#27272a] flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
                   <ShieldCheck size={18} className="text-success" /> Autenticação em Dois Fatores (2FA)
@@ -186,13 +186,13 @@ export const AdminProfile = () => {
                 { icon: <Laptop size={16} className="text-danger" />, device: 'Windows • Chrome', info: 'Sessão atual • São Paulo, BR', time: 'Agora', active: true },
                 { icon: <Smartphone size={16} className="text-[#71717a]" />, device: 'iPhone • Safari', info: 'Último acesso • Campinas, BR', time: 'há 4h', active: false },
               ].map((s, i) => (
-                <div key={i} className={`px-6 py-4 flex items-center gap-4 ${s.active ? 'bg-danger/5' : ''}`}>
+                <div key={i} className={`px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 ${s.active ? 'bg-danger/5' : ''}`}>
                   <div className="w-9 h-9 rounded-lg bg-[#18181b] border border-[#27272a] flex items-center justify-center shrink-0">{s.icon}</div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-white">{s.device}</p>
                     <p className={`text-xs ${s.active ? 'text-success' : 'text-[#71717a]'}`}>{s.info} • {s.time}</p>
                   </div>
-                  {!s.active && <button className="text-xs text-danger hover:text-red-400 font-bold">Desconectar</button>}
+                  {!s.active && <button className="text-xs text-danger hover:text-red-400 font-bold self-start sm:self-auto">Desconectar</button>}
                 </div>
               ))}
             </div>
@@ -201,7 +201,7 @@ export const AdminProfile = () => {
       )}
 
       {/* Danger Zone */}
-      <div className="bg-[#0d0505] border border-danger/20 rounded-2xl p-6 flex items-center justify-between">
+      <div className="bg-[#0d0505] border border-danger/20 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-sm font-bold text-white mb-0.5">Encerrar Sessão</h3>
           <p className="text-xs text-[#71717a]">Você será redirecionado para a tela de login.</p>

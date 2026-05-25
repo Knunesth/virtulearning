@@ -117,10 +117,10 @@ export const AdminSettings = () => {
         <p className="text-[#71717a] text-sm">Gerencie as configurações globais da plataforma VirtuLearning.</p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* Left Nav */}
-        <aside className="w-52 shrink-0">
-          <nav className="flex flex-col gap-0.5 sticky top-4">
+        <aside className="w-full md:w-52 shrink-0">
+          <nav className="flex md:flex-col gap-0.5 sticky top-4 overflow-x-auto pb-2 md:pb-0 [&::-webkit-scrollbar]:hidden">
             {navItems.map(item => {
               const Icon = item.icon;
               const active = section === item.id;
@@ -135,7 +135,7 @@ export const AdminSettings = () => {
                   }`}
                 >
                   <Icon size={15} />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate whitespace-nowrap">{item.label}</span>
                   {item.id === 'perigo' && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-danger"></div>}
                 </button>
               );
@@ -385,7 +385,7 @@ export const AdminSettings = () => {
               ].map((item, i) => {
                 const isDanger = item.tone === 'danger';
                 return (
-                  <div key={i} className={`rounded-2xl border p-6 flex items-center justify-between gap-6 ${isDanger ? 'bg-[#0d0505] border-danger/20' : 'bg-[#0d0a00] border-warning/20'}`}>
+                  <div key={i} className={`rounded-2xl border p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 ${isDanger ? 'bg-[#0d0505] border-danger/20' : 'bg-[#0d0a00] border-warning/20'}`}>
                     <div>
                       <h3 className="text-sm font-bold text-white mb-0.5 flex items-center gap-2">
                         <AlertTriangle size={14} className={isDanger ? 'text-danger' : 'text-warning'} />
