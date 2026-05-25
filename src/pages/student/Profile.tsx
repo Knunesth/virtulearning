@@ -115,8 +115,8 @@ export const Profile = () => {
       setIsDirty(false);
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 3000);
-    } catch {
-      // Erro será exibido pelo toast ou pelo estado de erro
+    } catch (e: any) {
+      alert(`Erro 400: ${JSON.stringify(e.response?.data)}`);
     }
   };
 
