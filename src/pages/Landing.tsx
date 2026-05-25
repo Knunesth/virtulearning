@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Users, Award, ArrowRight, PlayCircle, Star, CheckCircle, MonitorPlay, ChevronDown, Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { api } from '../services/api';
 import { Button } from '../components/ui/Button';
 
 // Mock data para depoimentos

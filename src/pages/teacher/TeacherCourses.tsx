@@ -9,7 +9,6 @@ import { useAuthStore } from '../../store/useAuthStore';
 
 export const TeacherCourses = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
 
   const { data: coursesData, isLoading, isError } = useMyCourses();
   const createCourse = useCreateCourse();

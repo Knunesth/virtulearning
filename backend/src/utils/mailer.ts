@@ -41,7 +41,6 @@ export async function sendVerificationEmail(to: string, nome: string, token: str
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`[MAILER] E-mail de verificação enviado para ${to}`);
   } catch (error) {
     console.error(`[MAILER] Falha ao enviar e-mail para ${to}:`, error);
     // Não estouramos o erro para não quebrar o fluxo de cadastro, 

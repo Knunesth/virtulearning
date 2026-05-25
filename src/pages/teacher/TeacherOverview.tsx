@@ -1,4 +1,4 @@
-import { DollarSign, ShoppingCart, Users, GraduationCap, ArrowUpRight, TrendingUp, Image as ImageIcon } from 'lucide-react';
+import { BookOpen, Users, DollarSign, Star, TrendingUp, PlayCircle, Image as ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';

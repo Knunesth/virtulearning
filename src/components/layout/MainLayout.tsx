@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Moon, Instagram, Twitter, Linkedin } from 'lucide-react';
+import { Moon } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 
 export const MainLayout = () => {
@@ -80,14 +80,14 @@ export const MainLayout = () => {
             <div>
               <h4 className="text-white text-base font-extrabold mb-6">Conecte-se</h4>
               <div className="flex gap-4">
-                <a href="#" className="w-10 h-10 rounded-full bg-[#121214] border border-[#27272a] flex items-center justify-center text-[#a1a1aa] hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all duration-300">
-                  <Instagram size={18} />
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[#a1a1aa] hover:bg-accent hover:text-[#09090b] transition-all duration-300">
+                  <span className="text-sm font-bold">In</span>
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-[#121214] border border-[#27272a] flex items-center justify-center text-[#a1a1aa] hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all duration-300">
-                  <Twitter size={18} />
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[#a1a1aa] hover:bg-accent hover:text-[#09090b] transition-all duration-300">
+                  <span className="text-sm font-bold">Tw</span>
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-[#121214] border border-[#27272a] flex items-center justify-center text-[#a1a1aa] hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all duration-300">
-                  <Linkedin size={18} />
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[#a1a1aa] hover:bg-accent hover:text-[#09090b] transition-all duration-300">
+                  <span className="text-sm font-bold">Li</span>
                 </a>
               </div>
             </div>

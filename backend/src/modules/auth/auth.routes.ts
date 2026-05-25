@@ -29,8 +29,9 @@ const loginSchema = z.object({
 
 // Sanitize user (never return password hash)
 const sanitize = (user: any) => {
-  const { senha_hash, refresh_token_hash, login_tentativas, bloqueado_ate, ...safe } = user;
-  return safe;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { senha_hash, refresh_token_hash, login_tentativas, bloqueado_ate, ...safeUser } = user;
+  return safeUser;
 };
 
 export async function authRoutes(fastify: FastifyInstance) {
@@ -76,9 +77,6 @@ export async function authRoutes(fastify: FastifyInstance) {
       },
     });
 
-    const verificationLink = `/verify-email?token=${rawToken}`;
-    console.log(`[DEV] Link de verificação gerado: ${verificationLink}`);
-    
     // Dispara o envio do email de forma assíncrona se o EMAIL_USER estiver configurado
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       sendVerificationEmail(email, nome, rawToken);
@@ -86,8 +84,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     return reply.status(201).send({ 
       message: 'Cadastro realizado. Verifique seu e-mail.', 
-      user: sanitize(user), 
-      verificationLink 
+      user: sanitize(user)
     });
   });
 
@@ -428,10 +425,10 @@ export async function authRoutes(fastify: FastifyInstance) {
     });
 
     const resetLink = `/reset-password?token=${rawToken}`;
-    console.log(`[DEV] Link de reset de senha: ${resetLink}`);
-    // TODO: Substituir pelo envio de email via Nodemailer/Resend
-
-    return reply.send({ message: 'Se este e-mail estiver cadastrado, você receberá um link de recuperação.', resetLink });
+    
+    // (Opcional) Enviar email de reset de senha
+    // await sendResetPasswordEmail(user.email, user.nome, resetLink);
+    return reply.send({ message: 'Se este e-mail estiver cadastrado, você receberá um link de recuperação.' });
   });
 
   // ── POST /auth/reset-password ─────────────────────────────────────────────

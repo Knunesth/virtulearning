@@ -1,4 +1,4 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyRequest } from 'fastify';
 import prisma from '../config/prisma';
 
 // Logs all admin actions to the audit_logs table
