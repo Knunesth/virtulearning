@@ -14,19 +14,42 @@ const Sparkline = ({ values, color }: { values: number[]; color: string }) => {
   );
 };
 
-const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
-const REVENUE = [18200, 21400, 19800, 27100, 31500, 45231];
+import { useAdminFinancials } from '../../hooks/useAdminFinancials';
+import { Loader2 } from 'lucide-react';
+import { formatCurrency } from '../../utils/format';
 
-const TRANSACTIONS = [
-  { name: 'João Silva',    course: 'React Native',       amount: '+R$ 199,90', date: 'Hoje, 14:22',    type: 'compra' },
-  { name: 'Maria Souza',  course: 'Node.js Avançado',   amount: '+R$ 149,90', date: 'Hoje, 11:05',    type: 'compra' },
-  { name: 'Pedro Alves',  course: 'UX/UI Design',       amount: '-R$ 89,90',  date: 'Hoje, 09:30',    type: 'reembolso' },
-  { name: 'Ana Costa',    course: 'Python para Dados',  amount: '+R$ 89,90',  date: 'Ontem, 18:14',   type: 'compra' },
-  { name: 'Lucas Lima',   course: 'DevOps e CI/CD',     amount: '+R$ 129,90', date: 'Ontem, 15:00',   type: 'compra' },
-  { name: 'Carla Dias',   course: 'React Native',       amount: '+R$ 199,90', date: 'Ontem, 10:33',   type: 'compra' },
-];
 
 export const AdminFinancials = () => {
+  const { data: financials, isLoading, isError } = useAdminFinancials();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (isError || !financials) {
+    return (
+      <div className="flex items-center justify-center h-[60vh] text-danger">
+        Ocorreu um erro ao carregar os dados financeiros.
+      </div>
+    );
+  }
+
+  const { kpis, chartData, topCourses, transactions } = financials;
+
+  // Extrair valores de receita do chartData para montar o Sparkline
+  const chartValues = chartData.map(c => c.revenue);
+
+  const kpiCards = [
+    { label: 'Receita Total (mês)',  value: formatCurrency(kpis.receitaMensal.value), change: `${kpis.receitaMensal.change}%`, up: kpis.receitaMensal.up,  color: '#22c55e', values: chartValues.length > 0 ? chartValues : [0,0] },
+    { label: 'MRR',                  value: formatCurrency(kpis.mrr.value), change: `${kpis.mrr.change}%`,  up: kpis.mrr.up,  color: '#3b82f6', values: chartValues.length > 0 ? chartValues : [0,0] },
+    { label: 'Ticket Médio',         value: formatCurrency(kpis.ticketMedio.value), change: `${kpis.ticketMedio.change}%`,  up: kpis.ticketMedio.up,  color: '#f59e0b', values: chartValues.length > 0 ? chartValues : [0,0] },
+    { label: 'Reembolsos',           value: formatCurrency(kpis.reembolsos.value),  change: `${kpis.reembolsos.change}%`,  up: kpis.reembolsos.up, color: '#ef4444', values: chartValues.length > 0 ? chartValues.map(() => 0) : [0,0] },
+  ];
+
   return (
     <div className="animate-in fade-in duration-500 pb-20 space-y-6">
       <div>
@@ -36,12 +59,7 @@ export const AdminFinancials = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Receita Total (mês)',  value: 'R$ 45.231', change: '+12.5%', up: true,  color: '#22c55e', values: REVENUE },
-          { label: 'MRR',                  value: 'R$ 45.231', change: '+8.2%',  up: true,  color: '#3b82f6', values: REVENUE.map(v => v * 0.9) },
-          { label: 'Ticket Médio',         value: 'R$ 134,90', change: '+3.1%',  up: true,  color: '#f59e0b', values: [110,118,125,128,130,134] },
-          { label: 'Reembolsos',           value: 'R$ 1.290',  change: '+0.8%',  up: false, color: '#ef4444', values: [400,600,500,900,800,1290] },
-        ].map((m, i) => (
+        {kpiCards.map((m, i) => (
           <div key={i} className="bg-[#121214] border border-[#27272a] rounded-xl p-5 overflow-hidden flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#71717a] font-medium">{m.label}</span>
@@ -72,19 +90,19 @@ export const AdminFinancials = () => {
           </div>
           {/* Bar chart simulation */}
           <div className="flex items-end gap-3 h-40">
-            {MONTHS.map((m, i) => {
-              const max = Math.max(...REVENUE);
-              const pct = (REVENUE[i] / max) * 100;
-              const isLast = i === MONTHS.length - 1;
+            {chartData.map((m, i) => {
+              const max = Math.max(...chartValues) || 1;
+              const pct = (m.revenue / max) * 100;
+              const isLast = i === chartData.length - 1;
               return (
-                <div key={m} className="flex-1 flex flex-col items-center gap-2">
+                <div key={m.name} className="flex-1 flex flex-col items-center gap-2">
                   <div className="relative w-full flex items-end" style={{ height: '120px' }}>
                     <div
                       className={`w-full rounded-t-md transition-all ${isLast ? 'bg-accent shadow-[0_0_12px_rgba(255,215,0,0.3)]' : 'bg-[#27272a] hover:bg-[#3f3f46]'}`}
                       style={{ height: `${pct}%` }}
                     />
                   </div>
-                  <span className="text-[10px] text-[#52525b]">{m}</span>
+                  <span className="text-[10px] text-[#52525b]">{m.name}</span>
                 </div>
               );
             })}
@@ -95,22 +113,20 @@ export const AdminFinancials = () => {
         <div className="bg-[#121214] border border-[#27272a] rounded-xl p-6">
           <h3 className="text-sm font-bold text-white mb-4">Top Cursos por Receita</h3>
           <div className="space-y-4">
-            {[
-              { title: 'React Native', revenue: 'R$ 8.200', pct: 100 },
-              { title: 'Node.js Avançado', revenue: 'R$ 5.100', pct: 62 },
-              { title: 'UX/UI Design', revenue: 'R$ 3.900', pct: 47 },
-              { title: 'Python Dados', revenue: 'R$ 2.800', pct: 34 },
-            ].map((c, i) => (
+            {topCourses.map((course, i) => (
               <div key={i}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-[#a1a1aa] truncate pr-2">{c.title}</span>
-                  <span className="text-xs font-bold text-white shrink-0">{c.revenue}</span>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-white">{course.title}</span>
+                  <span className="font-bold text-white">{formatCurrency(course.revenue)}</span>
                 </div>
-                <div className="h-1.5 bg-[#27272a] rounded-full overflow-hidden">
-                  <div className="h-full bg-accent rounded-full" style={{ width: `${c.pct}%` }}></div>
+                <div className="h-1.5 w-full bg-[#27272a] rounded-full overflow-hidden">
+                  <div className="h-full bg-accent" style={{ width: `${course.pct}%` }} />
                 </div>
               </div>
             ))}
+            {topCourses.length === 0 && (
+              <p className="text-sm text-muted text-center py-4">Nenhum curso gerou receita ainda.</p>
+            )}
           </div>
         </div>
       </div>
@@ -122,30 +138,41 @@ export const AdminFinancials = () => {
           <span className="text-[10px] text-[#52525b]">Últimas 24h</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left min-w-[800px]">
-          <thead>
-            <tr className="border-b border-[#27272a]">
-              {['Usuário', 'Curso', 'Tipo', 'Valor', 'Data'].map((h, i) => (
-                <th key={i} className="px-5 py-3 text-[10px] font-bold text-[#52525b] uppercase tracking-widest">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#27272a]/50">
-            {TRANSACTIONS.map((t, i) => (
-              <tr key={i} className="hover:bg-[#18181b] transition-colors">
-                <td className="px-5 py-3 text-sm text-white font-medium">{t.name}</td>
-                <td className="px-5 py-3 text-sm text-[#71717a]">{t.course}</td>
-                <td className="px-5 py-3">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${t.type === 'compra' ? 'text-success bg-success/10 border-success/20' : 'text-danger bg-danger/10 border-danger/20'}`}>
-                    {t.type}
-                  </span>
-                </td>
-                <td className={`px-5 py-3 text-sm font-bold ${t.type === 'compra' ? 'text-success' : 'text-danger'}`}>{t.amount}</td>
-                <td className="px-5 py-3 text-xs text-[#52525b]">{t.date}</td>
+          <table className="w-full min-w-[600px]">
+            <thead>
+              <tr className="border-b border-[#27272a]">
+                <th className="text-left py-4 px-6 text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Usuário</th>
+                <th className="text-left py-4 px-6 text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Curso</th>
+                <th className="text-left py-4 px-6 text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Tipo</th>
+                <th className="text-left py-4 px-6 text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Valor</th>
+                <th className="text-left py-4 px-6 text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Data</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {transactions.map((t) => (
+                <tr key={t.id} className="border-b border-[#27272a]/50 hover:bg-white/[0.02] transition-colors">
+                  <td className="py-4 px-6 text-sm font-bold text-white">{t.name}</td>
+                  <td className="py-4 px-6 text-sm text-[#a1a1aa]">{t.course}</td>
+                  <td className="py-4 px-6">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.type === 'compra' ? 'bg-success/10 text-success border border-success/20' : 'bg-danger/10 text-danger border border-danger/20'}`}>
+                      {t.type}
+                    </span>
+                  </td>
+                  <td className={`py-4 px-6 text-sm font-bold ${t.type === 'compra' ? 'text-success' : 'text-danger'}`}>
+                    {t.type === 'compra' ? '+' : '-'}{formatCurrency(t.amount)}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#71717a]">
+                    {new Date(t.date).toLocaleDateString('pt-BR')}
+                  </td>
+                </tr>
+              ))}
+              {transactions.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-muted text-sm">Nenhuma transação encontrada.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
