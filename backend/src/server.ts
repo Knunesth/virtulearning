@@ -145,7 +145,7 @@ async function bootstrap() {
   app.log.info(`🚀 VirtuLearning API rodando em http://localhost:${PORT}`);
   app.log.info(`📋 Health check: http://localhost:${PORT}/health`);
 
-  const appUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  const appUrl = process.env.RENDER_EXTERNAL_URL || 'https://virtulearning-back.onrender.com';
   startKeepAlive(appUrl);
 }
 
