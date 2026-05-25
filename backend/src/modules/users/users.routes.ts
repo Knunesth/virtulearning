@@ -119,12 +119,12 @@ export async function usersRoutes(fastify: FastifyInstance) {
     }
   }, async (req, reply) => {
     const schema = z.object({
-      nome:        z.string().min(2).max(120).optional(),
+      nome:        z.string().max(120).optional(),
       bio:         z.string().max(500).optional(),
       telefone:    z.string().max(20).optional(),
-      linkedin_url:z.string().url().optional().or(z.literal('')),
-      nickname:    z.string().min(2).max(60).optional(),
-      avatar_url:  z.string().url().optional().or(z.literal('')),
+      linkedin_url:z.string().max(500).optional(),
+      nickname:    z.string().max(60).optional(),
+      avatar_url:  z.string().optional(),
     });
 
     const parse = schema.safeParse(req.body);
