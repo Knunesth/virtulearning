@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api } from '../services/api';
+import { queryClient } from '../lib/react-query';
 
 export interface AuthUser {
   id: number;
@@ -49,8 +50,10 @@ export const useAuthStore = create<AuthState>()(
 
       setViewMode: (mode) => set({ viewMode: mode }),
 
-      logout: () =>
-        set({ user: null, token: null, isAuthenticated: false, isInitializing: false, viewMode: 'aluno' }),
+      logout: () => {
+        queryClient.clear();
+        set({ user: null, token: null, isAuthenticated: false, isInitializing: false, viewMode: 'aluno' });
+      },
 
       initAuth: async () => {
         const { token, viewMode } = get();
