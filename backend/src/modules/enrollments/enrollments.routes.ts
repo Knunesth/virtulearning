@@ -7,7 +7,7 @@ import { addXP } from '../../utils/xp';
 export async function enrollmentsRoutes(fastify: FastifyInstance) {
   // ── POST /enrollments — Aluno: enroll in a course ─────────────────────────
   fastify.post('/', {
-    preHandler: [requireAuth, requireRole('aluno')],
+    preHandler: [requireAuth, requireRole('aluno', 'professor', 'admin')],
     schema: { tags: ['enrollments'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
     const { curso_id } = req.body as { curso_id: number };
