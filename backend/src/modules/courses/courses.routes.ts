@@ -60,7 +60,10 @@ export async function coursesRoutes(fastify: FastifyInstance) {
     }
   }, async (req, reply) => {
     const courses = await prisma.course.findMany({
-      where: { professor_id: req.user!.sub },
+      where: { 
+        professor_id: req.user!.sub,
+        status: { not: 'arquivado' }
+      },
       orderBy: { created_at: 'desc' },
       include: {
         professor: { select: { id: true, nome: true, avatar_url: true } },
