@@ -122,78 +122,83 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
     }
   }, async (req, reply) => {
-    const parse = loginSchema.safeParse(req.body);
-    if (!parse.success) {
-      return reply.status(400).send({ error: 'Dados inválidos.' });
-    }
-    const { email, senha } = parse.data;
+    try {
+      const parse = loginSchema.safeParse(req.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: 'Dados inválidos.' });
+      }
+      const { email, senha } = parse.data;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+      const user = await prisma.user.findUnique({ where: { email } });
 
-    // Generic message to prevent user enumeration
-    if (!user) {
-      return reply.status(401).send({ error: 'E-mail ou senha incorretos.' });
-    }
+      // Generic message to prevent user enumeration
+      if (!user) {
+        return reply.status(401).send({ error: 'E-mail ou senha incorretos.' });
+      }
 
-    // Check account lockout
-    if (user.bloqueado_ate && user.bloqueado_ate > new Date()) {
-      const remaining = Math.ceil((user.bloqueado_ate.getTime() - Date.now()) / 60000);
-      return reply.status(429).send({
-        error: `Conta temporariamente bloqueada por ${remaining} minuto(s) devido a múltiplas tentativas falhas.`,
-      });
-    }
-
-    if (user.status === 'suspenso') {
-      return reply.status(403).send({ error: 'Sua conta está suspensa. Entre em contato com o suporte.' });
-    }
-
-    const isValid = await bcrypt.compare(senha, user.senha_hash);
-    if (!isValid) {
-      const attempts = user.login_tentativas + 1;
-      const shouldLock = attempts >= MAX_ATTEMPTS;
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          login_tentativas: attempts,
-          bloqueado_ate: shouldLock
-            ? new Date(Date.now() + LOCKOUT_MIN * 60 * 1000)
-            : undefined,
-        },
-      });
-
-      if (shouldLock) {
+      // Check account lockout
+      if (user.bloqueado_ate && user.bloqueado_ate > new Date()) {
+        const remaining = Math.ceil((user.bloqueado_ate.getTime() - Date.now()) / 60000);
         return reply.status(429).send({
-          error: `Muitas tentativas falhas. Conta bloqueada por ${LOCKOUT_MIN} minutos.`,
+          error: `Conta temporariamente bloqueada por ${remaining} minuto(s) devido a múltiplas tentativas falhas.`,
         });
       }
 
-      const left = MAX_ATTEMPTS - attempts;
-      return reply.status(401).send({
-        error: `E-mail ou senha incorretos. ${left} tentativa(s) restante(s).`,
+      if (user.status === 'suspenso') {
+        return reply.status(403).send({ error: 'Sua conta está suspensa. Entre em contato com o suporte.' });
+      }
+
+      const isValid = await bcrypt.compare(senha, user.senha_hash);
+      if (!isValid) {
+        const attempts = user.login_tentativas + 1;
+        const shouldLock = attempts >= MAX_ATTEMPTS;
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            login_tentativas: attempts,
+            bloqueado_ate: shouldLock
+              ? new Date(Date.now() + LOCKOUT_MIN * 60 * 1000)
+              : undefined,
+          },
+        });
+
+        if (shouldLock) {
+          return reply.status(429).send({
+            error: `Muitas tentativas falhas. Conta bloqueada por ${LOCKOUT_MIN} minutos.`,
+          });
+        }
+
+        const left = MAX_ATTEMPTS - attempts;
+        return reply.status(401).send({
+          error: `E-mail ou senha incorretos. ${left} tentativa(s) restante(s).`,
+        });
+      }
+
+      // Successful login — reset attempt counter
+      const payload = { sub: user.id, email: user.email, role: user.tipo_usuario, tenantId: user.tenant_id };
+      const accessToken  = signAccessToken(payload);
+      const refreshToken = signRefreshToken(payload);
+
+      const refreshHash = await bcrypt.hash(refreshToken, 10);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { login_tentativas: 0, bloqueado_ate: null, refresh_token_hash: refreshHash, ultimo_login: new Date() },
       });
+
+      // Refresh token in HttpOnly cookie (inaccessible to JS)
+      reply.setCookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/api/auth/refresh',
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+
+      return reply.send({ accessToken, user: sanitize(user) });
+    } catch (err) {
+      console.error('[LOGIN ERROR]', err);
+      return reply.status(500).send({ error: 'Erro interno no servidor', detail: String(err) });
     }
-
-    // Successful login — reset attempt counter
-    const payload = { sub: user.id, email: user.email, role: user.tipo_usuario, tenantId: user.tenant_id };
-    const accessToken  = signAccessToken(payload);
-    const refreshToken = signRefreshToken(payload);
-
-    const refreshHash = await bcrypt.hash(refreshToken, 10);
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { login_tentativas: 0, bloqueado_ate: null, refresh_token_hash: refreshHash, ultimo_login: new Date() },
-    });
-
-    // Refresh token in HttpOnly cookie (inaccessible to JS)
-    reply.setCookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/api/auth/refresh',
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-    });
-
-    return reply.send({ accessToken, user: sanitize(user) });
   });
 
   // ── POST /auth/refresh ────────────────────────────────────────────────────
