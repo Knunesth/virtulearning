@@ -5,7 +5,20 @@ import { requireAuth, requireRole } from '../../middleware/auth';
 import { auditLog } from '../../middleware/audit';
 
 const sanitize = (u: any) => {
-  const { senha_hash, refresh_token_hash, ...safe } = u;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {
+    senha_hash,
+    refresh_token_hash,
+    login_tentativas,
+    bloqueado_ate,
+    invite_token,
+    invite_token_expires,
+    reset_token,
+    reset_token_expires,
+    verification_token,
+    verification_token_expires,
+    ...safe
+  } = u;
   return safe;
 };
 

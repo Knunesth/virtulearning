@@ -37,6 +37,14 @@ const sanitize = (user: any) => {
 export async function authRoutes(fastify: FastifyInstance) {
   // ── POST /auth/register ───────────────────────────────────────────────────
   fastify.post('/register', {
+    config: {
+      rateLimit: {
+        max: 3,
+        timeWindow: '1 hour',
+        keyGenerator: (req) => req.ip,
+        errorResponseBuilder: () => ({ error: 'Muitos cadastros deste IP. Aguarde 1 hora.' }),
+      },
+    },
     schema: {
       tags: ['auth'],
       body: {
@@ -90,6 +98,14 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // ── POST /auth/login ──────────────────────────────────────────────────────
   fastify.post('/login', {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '15 minutes',
+        keyGenerator: (req) => req.ip,
+        errorResponseBuilder: () => ({ error: 'Muitas tentativas de login. Aguarde 15 minutos.' }),
+      },
+    },
     schema: {
       tags: ['auth'],
       body: {
@@ -164,6 +180,12 @@ export async function authRoutes(fastify: FastifyInstance) {
               : undefined,
           },
         });
+
+        // Log de segurança: tentativa de login falhada
+        console.warn(
+          `[SECURITY] Login falho: email=${email} | tentativas=${attempts} | ` +
+          `bloqueado=${shouldLock} | IP=${req.ip}`
+        );
 
         if (shouldLock) {
           return reply.status(429).send({
@@ -295,6 +317,14 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // ── POST /auth/set-password ───────────────────────────────────────────────
   fastify.post('/set-password', {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '1 hour',
+        keyGenerator: (req) => req.ip,
+        errorResponseBuilder: () => ({ error: 'Muitas tentativas. Aguarde 1 hora.' }),
+      },
+    },
     schema: {
       tags: ['auth'],
       body: {
@@ -390,6 +420,14 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // ── POST /auth/forgot-password ────────────────────────────────────────────
   fastify.post('/forgot-password', {
+    config: {
+      rateLimit: {
+        max: 3,
+        timeWindow: '1 hour',
+        keyGenerator: (req) => req.ip,
+        errorResponseBuilder: () => ({ error: 'Muitas solicitações. Aguarde 1 hora.' }),
+      },
+    },
     schema: {
       tags: ['auth'],
       body: {
@@ -401,6 +439,9 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
     }
   }, async (req, reply) => {
+    // Delay fixo de 500ms para prevenir timing attacks (não revela se o email existe)
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     const schema = z.object({ email: z.string().email() });
     const parse = schema.safeParse(req.body);
     if (!parse.success) return reply.status(400).send({ error: 'E-mail inválido.' });
@@ -408,9 +449,11 @@ export async function authRoutes(fastify: FastifyInstance) {
     const { email } = parse.data;
     const user = await prisma.user.findUnique({ where: { email } });
 
+    // Sempre retornar a mesma mensagem — não vaza se o email existe ou não
+    const MSG = 'Se este e-mail estiver cadastrado, você receberá um link de recuperação.';
+
     if (!user) {
-      // Retornar 200 para não vazar a existência do email
-      return reply.send({ message: 'Se este e-mail estiver cadastrado, você receberá um link de recuperação.' });
+      return reply.send({ message: MSG });
     }
 
     const rawToken = crypto.randomUUID();
@@ -424,11 +467,11 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
     });
 
-    const resetLink = `/reset-password?token=${rawToken}`;
-    
     // (Opcional) Enviar email de reset de senha
+    // const resetLink = `/reset-password?token=${rawToken}`;
     // await sendResetPasswordEmail(user.email, user.nome, resetLink);
-    return reply.send({ message: 'Se este e-mail estiver cadastrado, você receberá um link de recuperação.' });
+
+    return reply.send({ message: MSG });
   });
 
   // ── POST /auth/reset-password ─────────────────────────────────────────────

@@ -20,6 +20,7 @@ export type ViewMode = 'aluno' | 'professor' | 'admin';
 
 interface AuthState {
   user: AuthUser | null;
+  // token vive APENAS em memória — nunca no localStorage
   token: string | null;
   isAuthenticated: boolean;
   isInitializing: boolean;
@@ -57,41 +58,67 @@ export const useAuthStore = create<AuthState>()(
 
       initAuth: async () => {
         const { token, viewMode } = get();
-        if (!token) {
-          set({ isInitializing: false });
-          return;
+
+        // Se já temos o token em memória, só valida o usuário
+        if (token) {
+          try {
+            const res = await api.get('/auth/me');
+            const user: AuthUser = {
+              id: res.data.user.id,
+              tenant_id: res.data.user.tenant_id,
+              nome: res.data.user.nome,
+              email: res.data.user.email,
+              tipo_usuario: res.data.user.tipo_usuario,
+              avatar_url: res.data.user.avatar_url,
+              bio: res.data.user.bio,
+              nickname: res.data.user.nickname,
+              telefone: res.data.user.telefone,
+              linkedin_url: res.data.user.linkedin_url,
+            };
+            let resolvedViewMode = viewMode;
+            if (user.tipo_usuario === 'aluno' && viewMode !== 'aluno') resolvedViewMode = 'aluno';
+            if (user.tipo_usuario === 'professor' && viewMode === 'admin') resolvedViewMode = 'professor';
+            set({ user, isAuthenticated: true, isInitializing: false, viewMode: resolvedViewMode });
+            return;
+          } catch {
+            // Token em memória inválido — tenta renovar via refresh cookie
+          }
         }
+
+        // Tenta renovar sessão via cookie HttpOnly (refresh token)
         try {
-          const res = await api.get('/auth/me');
+          const refreshRes = await api.post('/auth/refresh');
+          const newToken: string = refreshRes.data.accessToken;
+          set({ token: newToken });
+
+          const meRes = await api.get('/auth/me');
           const user: AuthUser = {
-            id: res.data.user.id,
-            tenant_id: res.data.user.tenant_id,
-            nome: res.data.user.nome,
-            email: res.data.user.email,
-            tipo_usuario: res.data.user.tipo_usuario,
-            avatar_url: res.data.user.avatar_url,
-            bio: res.data.user.bio,
-            nickname: res.data.user.nickname,
-            telefone: res.data.user.telefone,
-            linkedin_url: res.data.user.linkedin_url,
+            id: meRes.data.user.id,
+            tenant_id: meRes.data.user.tenant_id,
+            nome: meRes.data.user.nome,
+            email: meRes.data.user.email,
+            tipo_usuario: meRes.data.user.tipo_usuario,
+            avatar_url: meRes.data.user.avatar_url,
+            bio: meRes.data.user.bio,
+            nickname: meRes.data.user.nickname,
+            telefone: meRes.data.user.telefone,
+            linkedin_url: meRes.data.user.linkedin_url,
           };
-          // Se o usuário já tiver um viewMode salvo e ele ainda for válido para o seu tipo (ou seja, se for admin pode ser qualquer um, professor pode ser prof/aluno), mantém.
-          // Para simplificar, na inicialização já puxamos do storage. Se for inválido, cai pro tipo dele.
           let resolvedViewMode = viewMode;
           if (user.tipo_usuario === 'aluno' && viewMode !== 'aluno') resolvedViewMode = 'aluno';
           if (user.tipo_usuario === 'professor' && viewMode === 'admin') resolvedViewMode = 'professor';
-          
           set({ user, isAuthenticated: true, isInitializing: false, viewMode: resolvedViewMode });
         } catch {
-          // Token inválido ou expirado — logout limpo
+          // Sem token válido e sem cookie válido — sessão expirada
           set({ user: null, token: null, isAuthenticated: false, isInitializing: false, viewMode: 'aluno' });
         }
       },
     }),
     {
       name: 'virtulearning-auth',
-      // Persistir token, user e viewMode
-      partialize: (state) => ({ token: state.token, user: state.user, viewMode: state.viewMode }),
+      // SEGURANÇA: Persistir APENAS user e viewMode — NUNCA o accessToken
+      // O token vive somente em memória (estado Zustand não persistido)
+      partialize: (state) => ({ user: state.user, viewMode: state.viewMode }),
     }
   )
 );

@@ -31,6 +31,11 @@ export async function requireAuth(req: FastifyRequest, reply: FastifyReply) {
 export function requireRole(...roles: string[]) {
   return async function (req: FastifyRequest, reply: FastifyReply) {
     if (!req.user || !roles.includes(req.user.role)) {
+      console.warn(
+        `[SECURITY] Acesso negado: user ${req.user?.sub ?? 'desconhecido'} ` +
+        `(${req.user?.role ?? 'sem role'}) tentou acessar rota restrita a [${roles.join(', ')}] ` +
+        `— ${req.method} ${req.url} — IP: ${req.ip}`
+      );
       return reply.status(403).send({
         error: 'Acesso negado. Você não tem permissão para esta ação.',
       });

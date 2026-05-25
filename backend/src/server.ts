@@ -43,12 +43,18 @@ async function bootstrap() {
   await app.register(fastifyHelmet, {
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
-        styleSrc:   ["'self'", "'unsafe-inline'"],
-        imgSrc:     ["'self'", 'data:', 'https:'],
-        scriptSrc:  ["'self'"],
+        defaultSrc:  ["'self'"],
+        scriptSrc:   ["'self'"],
+        styleSrc:    ["'self'", "'unsafe-inline'"],
+        imgSrc:      ["'self'", 'data:', 'https:'],
+        connectSrc:  ["'self'", process.env.FRONTEND_URL || 'http://localhost:5173', 'https://virtulearning-tlhx.vercel.app'],
+        frameSrc:    ["'none'"],
+        objectSrc:   ["'none'"],
+        baseUri:     ["'self'"],
+        formAction:  ["'self'"],
       },
     },
+    crossOriginEmbedderPolicy: false, // Required for Vercel/browser compatibility
   });
 
   // ── 2. Security: CORS ────────────────────────────────────────────────────────
