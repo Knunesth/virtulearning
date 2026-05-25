@@ -1,73 +1,47 @@
-# React + TypeScript + Vite
+# VirtuLearning
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+VirtuLearning é uma plataforma de educação online (EAD) inovadora, desenvolvida com o objetivo de conectar alunos e professores em um ambiente moderno, escalável e de fácil usabilidade.
 
-Currently, two official plugins are available:
+Este sistema foi idealizado e projetado como o **Projeto Integrador (PI)** do curso técnico de Desenvolvimento de Sistemas no **Senac Taguatinga**, sob a orientação do professor **Hudson**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 👨‍💻 Desenvolvedor
+Desenvolvido integralmente por **Kauã Thierry Nunes Duarte Lima**.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 💻 Sobre o Frontend
 
-## Expanding the ESLint configuration
+A interface da aplicação foi desenvolvida com foco total na melhor experiência de usuário (UX) e em Design Responsivo (Mobile-First). O sistema foi arquitetado para fornecer uma experiência Premium e está preparado para atuar como um **Progressive Web App (PWA)** no futuro.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Tecnologias Utilizadas
+- **React.js & Vite**: Base do projeto, proporcionando um ambiente de desenvolvimento ultra-rápido e build otimizado.
+- **TypeScript**: Adição de tipagem estática para maior segurança, previsibilidade e escalabilidade do código.
+- **Tailwind CSS**: Framework utilitário usado para a construção de todo o design system (Dark Mode elegante, gradients suaves, glassmorphism e responsividade nativa em todas as resoluções).
+- **Zustand**: Gerenciamento de estado global leve e performático (utilizado no controle da sessão, níveis de acesso e visualizações de UI).
+- **TanStack Query (React Query)**: Abstração poderosa para o fetch de dados da API, mantendo o cache organizado e sincronizado.
+- **React Router Dom**: Gestão inteligente de rotas privadas, públicas e baseadas em cargos (Admin/Teacher/Student).
+- **Lucide React**: Biblioteca adotada para ícones modernos e minimalistas.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Principais Estruturas e Funcionalidades
+- **PWA Ready & Responsividade Extrema:** A interface se adapta perfeitamente do celular (320px) ao desktop ultrawide, incluindo uma Bottom Navigation dinâmica para dispositivos móveis.
+- **Sistema Multi-Perfil (RBAC):** 
+  - **👨‍🎓 Aluno:** Acesso a catálogo rico de cursos com filtros dinâmicos, player de vídeo responsivo (`WatchCourse`), aba de dúvidas, quizzes de fixação gamificados e um ranking de experiência (XP).
+  - **👨‍🏫 Professor:** Ferramenta dedicada (Course Builder) para criação e organização modular de aulas e vídeos, análise de receita e interação direta com dúvidas dos alunos.
+  - **🛡️ Administrador:** Painéis avançados de métricas, moderação rigorosa de aprovação de instrutores, gestão financeira e supervisão geral do estado da plataforma.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## ⚙️ Como Executar Localmente (Frontend)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Clone o repositório.
+2. Acesse a pasta raiz do projeto frontend.
+3. Instale as dependências executando:
+   ```bash
+   npm install
+   ```
+4. Crie um arquivo `.env` baseado nas variáveis necessárias (apontando para a API do backend).
+5. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+6. Abra `http://localhost:5173` em seu navegador.
