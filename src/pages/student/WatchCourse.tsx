@@ -5,6 +5,18 @@ import type { Lesson } from '../../hooks/useCourseDetail';
 import { Button } from '../../components/ui/Button';
 import { ChevronDown, ChevronUp, PlayCircle, CheckCircle2, Clock, ChevronLeft, Send, MessageSquare, User } from 'lucide-react';
 
+const getEmbedUrl = (url: string) => {
+  if (!url) return '';
+  if (url.includes('youtube.com/watch?v=')) {
+    return url.replace('watch?v=', 'embed/').split('&')[0];
+  }
+  if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1].split('?')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  return url;
+};
+
 export const WatchCourse = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -157,9 +169,7 @@ export const WatchCourse = () => {
             {activeVideo && activeVideo.url_video ? (
               <iframe 
                 className="w-full h-full absolute inset-0"
-                src={activeVideo.url_video.includes('youtube') 
-                  ? activeVideo.url_video.replace('watch?v=', 'embed/') 
-                  : activeVideo.url_video} 
+                src={getEmbedUrl(activeVideo.url_video)} 
                 title={activeVideo.titulo}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowFullScreen
