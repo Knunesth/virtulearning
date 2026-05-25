@@ -112,9 +112,15 @@ export async function authRoutes(fastify: FastifyInstance) {
               type: 'object',
               properties: {
                 id:            { type: 'number' },
+                tenant_id:     { type: 'number', nullable: true },
                 nome:          { type: 'string' },
                 email:         { type: 'string' },
-                tipo_usuario:  { type: 'string' }
+                tipo_usuario:  { type: 'string' },
+                avatar_url:    { type: 'string', nullable: true },
+                bio:           { type: 'string', nullable: true },
+                nickname:      { type: 'string', nullable: true },
+                telefone:      { type: 'string', nullable: true },
+                linkedin_url:  { type: 'string', nullable: true }
               }
             }
           }
@@ -269,9 +275,15 @@ export async function authRoutes(fastify: FastifyInstance) {
               type: 'object',
               properties: {
                 id:            { type: 'number' },
+                tenant_id:     { type: 'number', nullable: true },
                 nome:          { type: 'string' },
                 email:         { type: 'string' },
-                tipo_usuario:  { type: 'string' }
+                tipo_usuario:  { type: 'string' },
+                avatar_url:    { type: 'string', nullable: true },
+                bio:           { type: 'string', nullable: true },
+                nickname:      { type: 'string', nullable: true },
+                telefone:      { type: 'string', nullable: true },
+                linkedin_url:  { type: 'string', nullable: true }
               }
             }
           }
