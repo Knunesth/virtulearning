@@ -240,9 +240,9 @@ export async function coursesRoutes(fastify: FastifyInstance) {
     return reply.send(course);
   });
 
-  // ── DELETE /courses/:id — Admin only ──────────────────────────────────────
+  // ── DELETE /courses/:id — Admin ou Dono do Curso ─────────────────────────
   fastify.delete('/:id', {
-    preHandler: [requireAuth, requireRole('admin')],
+    preHandler: [requireAuth, requireRole('professor', 'admin')],
     schema: {
       tags: ['courses'],
       security: [{ bearerAuth: [] }]
@@ -251,6 +251,10 @@ export async function coursesRoutes(fastify: FastifyInstance) {
     const { id } = req.params as { id: string };
     const course = await prisma.course.findUnique({ where: { id: parseInt(id) } });
     if (!course) return reply.status(404).send({ error: 'Curso não encontrado.' });
+
+    if (req.user!.role !== 'admin' && course.professor_id !== req.user!.sub) {
+      return reply.status(403).send({ error: 'Você não tem permissão para excluir este curso.' });
+    }
 
     await prisma.course.update({ where: { id: parseInt(id) }, data: { status: 'arquivado' } });
     await auditLog(req.user!.sub, 'ARQUIVAR_CURSO', course.titulo, req);
