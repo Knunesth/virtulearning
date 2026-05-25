@@ -6,7 +6,22 @@ import { auditLog } from '../../middleware/audit';
 
 export async function coursesRoutes(fastify: FastifyInstance) {
   // ── GET /courses — Public: list published courses ─────────────────────────
-  fastify.get('/', async (req, reply) => {
+  fastify.get('/', {
+    schema: {
+      tags: ['courses'],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            data: { type: 'array', items: { type: 'object', additionalProperties: true } },
+            total: { type: 'number' },
+            page: { type: 'number' },
+            pages: { type: 'number' }
+          }
+        }
+      }
+    }
+  }, async (req, reply) => {
     const query = req.query as { search?: string; nivel?: string; page?: string; limit?: string };
     const page  = parseInt(query.page  || '1');
     const limit = parseInt(query.limit || '12');
@@ -37,36 +52,104 @@ export async function coursesRoutes(fastify: FastifyInstance) {
   });
 
   // ── GET /courses/:id — Public: get course details ─────────────────────────
-  fastify.get('/:id', async (req, reply) => {
+  fastify.get('/:id', {
+    schema: {
+      tags: ['courses'],
+      params: {
+        type: 'object',
+        properties: { id: { type: 'string' } }
+      }
+    }
+  }, async (req, reply) => {
     const { id } = req.params as { id: string };
+    const courseId = parseInt(id);
+    if (isNaN(courseId)) return reply.status(400).send({ error: 'id inválido.' });
+
     const course = await prisma.course.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: courseId },
       include: {
         professor: { select: { id: true, nome: true, avatar_url: true, bio: true } },
         modulos: {
           orderBy: { ordem: 'asc' },
-          include: { aulas: { orderBy: { ordem: 'asc' } } },
+          include: {
+            aulas: {
+              orderBy: { ordem: 'asc' },
+              // descricao incluída automaticamente (todos os campos do modelo)
+            },
+            _count: { select: { aulas: true } },
+          },
         },
         _count: { select: { matriculas: true } },
       },
     });
 
-    if (!course || (course.status !== 'publicado')) {
+    if (!course) {
       return reply.status(404).send({ error: 'Curso não encontrado.' });
+    }
+
+    // Cursos publicados: acesso público.
+    // Cursos não-publicados: apenas o professor dono ou admin pode ver.
+    if (course.status !== 'publicado') {
+      // Verifica autenticação inline (sem lançar erro; só nega)
+      let userId: number | null = null;
+      let userRole: string | null = null;
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        try {
+          const { verifyAccessToken } = await import('../../config/jwt');
+          const payload = verifyAccessToken(authHeader.split(' ')[1]);
+          userId   = payload.sub;
+          userRole = payload.role;
+        } catch { /* token inválido — trata como anônimo */ }
+      }
+
+      const isOwner = userId === course.professor_id;
+      const isAdmin = userRole === 'admin';
+      if (!isOwner && !isAdmin) {
+        return reply.status(404).send({ error: 'Curso não encontrado.' });
+      }
     }
 
     return reply.send(course);
   });
 
+  // ── GET /courses/:id/progress — Aluno: get lesson progress for a course ───
+  fastify.get('/:id/progress', {
+    preHandler: [requireAuth],
+    schema: {
+      tags: ['courses'],
+      security: [{ bearerAuth: [] }]
+    }
+  }, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const courseId = parseInt(id);
+    if (isNaN(courseId)) return reply.status(400).send({ error: 'id inválido.' });
+
+    const progress = await prisma.lessonProgress.findMany({
+      where: {
+        user_id: req.user!.sub,
+        lesson: { modulo: { curso_id: courseId } }
+      },
+      select: { lesson_id: true }
+    });
+
+    return reply.send(progress.map(p => p.lesson_id));
+  });
+
+
   // ── POST /courses — Professor: create a course ────────────────────────────
   fastify.post('/', {
     preHandler: [requireAuth, requireRole('professor', 'admin')],
+    schema: {
+      tags: ['courses'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const schema = z.object({
-      titulo:        z.string().min(5).max(200),
-      descricao:     z.string().min(10),
+      titulo:        z.string().min(3).max(200),
+      descricao:     z.string().min(3),
       preco:         z.number().min(0),
-      thumbnail:     z.string().url().optional(),
+      thumbnail:     z.string().optional(),
       nivel:         z.enum(['iniciante', 'intermediario', 'avancado']).default('iniciante'),
       duracao_horas: z.number().int().min(0).optional(),
     });
@@ -84,6 +167,10 @@ export async function coursesRoutes(fastify: FastifyInstance) {
   // ── PUT /courses/:id — Professor: update own course ───────────────────────
   fastify.put('/:id', {
     preHandler: [requireAuth, requireRole('professor', 'admin')],
+    schema: {
+      tags: ['courses'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const { id } = req.params as { id: string };
     const course = await prisma.course.findUnique({ where: { id: parseInt(id) } });
@@ -95,10 +182,10 @@ export async function coursesRoutes(fastify: FastifyInstance) {
     }
 
     const schema = z.object({
-      titulo:        z.string().min(5).max(200).optional(),
-      descricao:     z.string().min(10).optional(),
+      titulo:        z.string().min(3).max(200).optional(),
+      descricao:     z.string().min(3).optional(),
       preco:         z.number().min(0).optional(),
-      thumbnail:     z.string().url().optional(),
+      thumbnail:     z.string().optional(),
       nivel:         z.enum(['iniciante', 'intermediario', 'avancado']).optional(),
       status:        z.enum(['rascunho', 'publicado']).optional(),
       duracao_horas: z.number().int().min(0).optional(),
@@ -114,6 +201,10 @@ export async function coursesRoutes(fastify: FastifyInstance) {
   // ── PATCH /courses/:id/status — Admin: moderate course ────────────────────
   fastify.patch('/:id/status', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: {
+      tags: ['courses'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const { id }   = req.params as { id: string };
     const schema   = z.object({ status: z.enum(['publicado', 'suspenso', 'arquivado']) });
@@ -132,6 +223,10 @@ export async function coursesRoutes(fastify: FastifyInstance) {
   // ── DELETE /courses/:id — Admin only ──────────────────────────────────────
   fastify.delete('/:id', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: {
+      tags: ['courses'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const { id } = req.params as { id: string };
     const course = await prisma.course.findUnique({ where: { id: parseInt(id) } });
@@ -145,6 +240,10 @@ export async function coursesRoutes(fastify: FastifyInstance) {
   // ── GET /courses/admin/all — Admin: list all courses including non-published
   fastify.get('/admin/all', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: {
+      tags: ['courses'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const courses = await prisma.course.findMany({
       include: {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock, LogOut, Mail, Camera, AtSign, Phone, Link as LinkIcon, Medal, Plus, User, ShieldCheck, Smartphone, Laptop, ToggleRight, Key } from 'lucide-react';
+import { LogOut, Mail, Camera, AtSign, Phone, Link as LinkIcon, Medal, Plus, User, ShieldCheck, Smartphone, Laptop, ToggleRight, Key } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 

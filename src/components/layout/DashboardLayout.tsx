@@ -1,60 +1,198 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
-import { LogOut, Home, BookOpen, LayoutDashboard, FileText, Trophy, BrainCircuit, Settings, PlaySquare } from 'lucide-react';
+import { 
+  LogOut, Home, BookOpen, LayoutDashboard, FileText, Trophy, BrainCircuit, 
+  Settings, PlaySquare, Users, UserCheck, DollarSign, MessageSquare, ChevronDown, User, ShieldAlert 
+} from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 export const DashboardLayout = () => {
-  const { user, logout } = useAuthStore();
+  const { user, logout, viewMode, setViewMode } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
+  const selectorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (selectorRef.current && !selectorRef.current.contains(event.target as Node)) {
+        setIsModeSelectorOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const isTeacher = user?.tipo_usuario === 'professor';
+  const isAdmin = user?.tipo_usuario === 'admin';
+
+  const modeLabels = {
+    aluno: { label: 'Modo Aluno', icon: <User size={14} className="text-muted" /> },
+    professor: { label: 'Modo Professor', icon: <BookOpen size={14} className="text-accent" /> },
+    admin: { label: 'Modo Admin', icon: <ShieldAlert size={14} className="text-danger" /> }
+  };
+
   return (
     <div className="min-h-screen flex bg-bg text-text">
+      {/* Subtle dotted background */}
+      <div 
+        className="fixed inset-0 z-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(#27272a 1px, transparent 1px)',
+          backgroundSize: '24px 24px'
+        }}
+      />
+
       {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card hidden md:flex flex-col">
-        <div className="p-4 border-b border-border">
-          <Link to="/dashboard" className="text-xl font-bold text-accent">VirtuLearning</Link>
-        </div>
-        <nav className="flex-1 p-4 space-y-2">
-          {user?.tipo_usuario === 'admin' && (
-             <Link to="/admin" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-bg transition-colors"><LayoutDashboard size={20} /> Admin Panel</Link>
-          )}
-          {user?.tipo_usuario === 'professor' && (
-             <Link to="/teacher" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-bg transition-colors"><BookOpen size={20} /> Painel do Professor</Link>
-          )}
-          <Link to="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/dashboard' ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-bg'}`}><Home size={20} /> Início</Link>
-          <Link to="/catalog" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/catalog' ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-bg'}`}><BookOpen size={20} /> Catálogo</Link>
-          {user?.tipo_usuario === 'aluno' && (
-            <Link to="/my-courses" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/my-courses' ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-bg'}`}><PlaySquare size={20} /> Meus Cursos</Link>
-          )}
-          
-          {user?.tipo_usuario === 'aluno' && (
-            <div className="pt-4 mt-4 border-t border-border">
-              <p className="px-3 mb-2 text-xs font-semibold text-muted uppercase tracking-wider">Carreira & Evolução</p>
-              <Link to="/resume" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/resume' ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-bg'}`}><FileText size={20} /> Meu Currículo</Link>
-              <Link to="/ranking" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/ranking' ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-bg'}`}><Trophy size={20} /> Ranking</Link>
-              <Link to="/quiz" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/quiz' ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-bg'}`}><BrainCircuit size={20} /> Quiz de Fixação</Link>
+      <aside className="w-64 flex-shrink-0 border-r border-transparent bg-bg/95 backdrop-blur-md hidden md:flex flex-col relative z-20 h-screen sticky top-0 overflow-hidden">
+        <div className="p-6 border-b border-transparent">
+          <Link to="/dashboard" className="text-2xl font-bold flex items-center gap-1 mb-6">
+             <span className="text-white">Virtu</span>
+             <span className={viewMode === 'admin' ? 'text-danger' : 'text-accent'}>Learning</span>
+             {viewMode === 'admin' && <span className="text-danger">.</span>}
+          </Link>
+
+          {/* Mode Selector */}
+          {(isAdmin || isTeacher) && (
+            <div className="relative" ref={selectorRef}>
+              <button 
+                onClick={() => setIsModeSelectorOpen(!isModeSelectorOpen)}
+                className="w-full flex items-center justify-between px-3 py-2 bg-[#18181b] border border-transparent rounded-lg text-sm hover:bg-[#27272a] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  {modeLabels[viewMode].icon}
+                  <span className="font-medium text-white">{modeLabels[viewMode].label}</span>
+                </div>
+                <ChevronDown size={14} className="text-muted" />
+              </button>
+
+              {isModeSelectorOpen && (
+                <div className="absolute top-full left-0 w-full mt-1 bg-[#18181b] border border-[#27272a] rounded-lg shadow-xl overflow-hidden z-50">
+                  <button 
+                    onClick={() => { setViewMode('aluno'); setIsModeSelectorOpen(false); navigate('/dashboard'); }}
+                    className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-[#27272a] transition-colors ${viewMode === 'aluno' ? 'bg-[#27272a] text-white' : 'text-muted'}`}
+                  >
+                    {modeLabels.aluno.icon}
+                    Modo Aluno
+                  </button>
+                  <button 
+                    onClick={() => { setViewMode('professor'); setIsModeSelectorOpen(false); navigate('/teacher'); }}
+                    className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-[#27272a] transition-colors ${viewMode === 'professor' ? 'bg-[#27272a] text-white' : 'text-muted'}`}
+                  >
+                    {modeLabels.professor.icon}
+                    Modo Professor
+                  </button>
+                  {isAdmin && (
+                    <button 
+                      onClick={() => { setViewMode('admin'); setIsModeSelectorOpen(false); navigate('/admin'); }}
+                      className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-[#27272a] transition-colors ${viewMode === 'admin' ? 'bg-[#27272a] text-white' : 'text-muted'}`}
+                    >
+                      {modeLabels.admin.icon}
+                      Modo Admin
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
+        </div>
+        
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+          
+          {/* MODO ALUNO */}
+          {viewMode === 'aluno' && (
+            <div className="space-y-1">
+              <Link to="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/dashboard' ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                <Home size={18} /> Início
+              </Link>
+              <Link to="/catalog" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/catalog' ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                <BookOpen size={18} /> Catálogo
+              </Link>
+              <Link to="/my-courses" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/my-courses' ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                <PlaySquare size={18} /> Meus Cursos
+              </Link>
+              
+              <div className="pt-4 mt-2">
+                <p className="px-3 mb-2 text-xs font-semibold text-muted uppercase tracking-wider">Carreira & Evolução</p>
+                <Link to="/resume" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/resume' ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                  <FileText size={18} /> Meu Currículo
+                </Link>
+                <Link to="/ranking" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/ranking' ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                  <Trophy size={18} /> Ranking
+                </Link>
+                <Link to="/quiz" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/quiz' ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                  <BrainCircuit size={18} /> Quiz de Fixação
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* MODO PROFESSOR */}
+          {viewMode === 'professor' && (
+            <div className="space-y-1">
+              <Link to="/teacher" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/teacher' ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                <LayoutDashboard size={18} /> Painel do Professor
+              </Link>
+              <Link to="/teacher/courses" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname.startsWith('/teacher/courses') ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                <BookOpen size={18} /> Meus Cursos
+              </Link>
+              <Link to="/teacher/messages" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/teacher/messages' ? 'bg-accent/10 text-accent font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}>
+                <MessageSquare size={18} /> Dúvidas dos Alunos
+              </Link>
+            </div>
+          )}
+
+          {/* MODO ADMINISTRADOR */}
+          {viewMode === 'admin' && (
+            <div className="space-y-1">
+              <Link to="/admin" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/admin' ? 'bg-danger/10 text-danger font-bold' : 'text-gray-300 hover:text-danger hover:bg-white/5'}`}>
+                <LayoutDashboard size={18} /> Visão Geral
+              </Link>
+              <Link to="/admin/users" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/admin/users' ? 'bg-danger/10 text-danger font-bold' : 'text-gray-300 hover:text-danger hover:bg-white/5'}`}>
+                <Users size={18} /> Usuários
+              </Link>
+              <Link to="/admin/courses" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/admin/courses' ? 'bg-danger/10 text-danger font-bold' : 'text-gray-300 hover:text-danger hover:bg-white/5'}`}>
+                <BookOpen size={18} /> Todos os Cursos
+              </Link>
+              <Link to="/admin/applications" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/admin/applications' ? 'bg-danger/10 text-danger font-bold' : 'text-gray-300 hover:text-danger hover:bg-white/5'}`}>
+                <UserCheck size={18} /> Aprovações
+              </Link>
+              <Link to="/admin/financials" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/admin/financials' ? 'bg-danger/10 text-danger font-bold' : 'text-gray-300 hover:text-danger hover:bg-white/5'}`}>
+                <DollarSign size={18} /> Financeiro
+              </Link>
+              <Link to="/admin/logs" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/admin/logs' ? 'bg-danger/10 text-danger font-bold' : 'text-gray-300 hover:text-danger hover:bg-white/5'}`}>
+                <FileText size={18} /> Auditoria
+              </Link>
+              <Link to="/admin/settings" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${location.pathname === '/admin/settings' ? 'bg-danger/10 text-danger font-bold' : 'text-gray-300 hover:text-danger hover:bg-white/5'}`}>
+                <Settings size={18} /> Configurações
+              </Link>
+            </div>
+          )}
+
         </nav>
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-transparent bg-[#18181b]/80">
           <Link 
-            to="/profile" 
-            className="flex items-center gap-3 mb-4 p-2 rounded-lg hover:bg-bg transition-colors group cursor-pointer w-full"
+            to={viewMode === 'admin' ? "/admin/profile" : (viewMode === 'professor' ? "/teacher/profile" : "/profile")} 
+            className="flex items-center gap-3 mb-4 p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer w-full"
             title="Configurações de Perfil"
           >
-            <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold group-hover:bg-accent group-hover:text-black transition-colors">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-black transition-transform group-hover:scale-105 ${viewMode === 'admin' ? 'bg-danger/80 text-white' : 'bg-accent'}`}>
               {user?.nome?.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1 text-left">
-              <p className="font-medium text-sm group-hover:text-accent transition-colors">{user?.nome}</p>
-              <p className="text-xs text-muted capitalize">{user?.tipo_usuario}</p>
+            <div className="flex-1 text-left overflow-hidden">
+              <p className={`font-medium text-sm transition-colors truncate ${viewMode === 'admin' ? 'group-hover:text-danger text-white' : 'group-hover:text-accent text-white'}`}>
+                {user?.nome}
+              </p>
+              <p className={`text-xs capitalize ${viewMode === 'admin' ? 'text-danger font-bold tracking-wider uppercase' : 'text-muted'}`}>
+                {user?.tipo_usuario}
+              </p>
             </div>
-            <Settings size={18} className="text-muted group-hover:text-accent transition-colors" />
+            <Settings size={18} className="text-muted group-hover:text-white transition-colors" />
           </Link>
           <button 
             onClick={handleLogout}
@@ -65,16 +203,24 @@ export const DashboardLayout = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6 md:hidden">
-           <Link to="/dashboard" className="text-lg font-bold text-accent">VirtuLearning</Link>
-           <button onClick={handleLogout} className="text-danger"><LogOut size={20}/></button>
+      {/* Main Content Area */}
+      <main className="flex-1 relative z-10 flex flex-col min-h-screen h-screen overflow-y-auto">
+        <header className="h-16 px-6 md:px-8 flex items-center justify-between sticky top-0 bg-bg/90 backdrop-blur-md border-b border-transparent z-10">
+          <div className="flex items-center gap-4">
+            {/* Mobile Title */}
+            <Link to="/dashboard" className="text-lg font-bold flex items-center gap-1 md:hidden">
+              <span className="text-white">Virtu</span>
+              <span className={viewMode === 'admin' ? 'text-danger' : 'text-accent'}>Learning</span>
+              {viewMode === 'admin' && <span className="text-danger">.</span>}
+            </Link>
+          </div>
+          
+          <button onClick={handleLogout} className="md:hidden text-danger p-2 hover:bg-white/5 rounded-full"><LogOut size={20}/></button>
         </header>
-        <main className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-4 md:p-8 max-w-[1400px] w-full mx-auto">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };

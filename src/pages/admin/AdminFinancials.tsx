@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, ArrowUpRight, CreditCard, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 const Sparkline = ({ values, color }: { values: number[]; color: string }) => {
   const max = Math.max(...values);
@@ -16,7 +16,6 @@ const Sparkline = ({ values, color }: { values: number[]; color: string }) => {
 
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
 const REVENUE = [18200, 21400, 19800, 27100, 31500, 45231];
-const USERS   = [320, 450, 490, 680, 920, 1234];
 
 const TRANSACTIONS = [
   { name: 'João Silva',    course: 'React Native',       amount: '+R$ 199,90', date: 'Hoje, 14:22',    type: 'compra' },

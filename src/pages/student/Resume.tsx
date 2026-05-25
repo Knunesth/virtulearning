@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Download, Share2, Briefcase, GraduationCap, Code, Mail, Phone, MapPin, Link as LinkIcon, Globe } from 'lucide-react';
 
 export const Resume = () => {

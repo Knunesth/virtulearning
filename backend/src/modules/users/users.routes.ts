@@ -13,6 +13,21 @@ export async function usersRoutes(fastify: FastifyInstance) {
   // ── GET /users — Admin: list all users with filters ────────────────────────
   fastify.get('/', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: {
+      tags: ['users'],
+      security: [{ bearerAuth: [] }],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            data: { type: 'array', items: { type: 'object', additionalProperties: true } },
+            total: { type: 'number' },
+            page: { type: 'number' },
+            pages: { type: 'number' }
+          }
+        }
+      }
+    }
   }, async (req, reply) => {
     const query = req.query as { role?: string; status?: string; search?: string; page?: string; limit?: string };
     const page  = parseInt(query.page  || '1');
@@ -38,6 +53,10 @@ export async function usersRoutes(fastify: FastifyInstance) {
   // ── GET /users/:id — Admin: get a single user ──────────────────────────────
   fastify.get('/:id', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: {
+      tags: ['users'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const { id } = req.params as { id: string };
     const user = await prisma.user.findUnique({ where: { id: parseInt(id) } });
@@ -48,6 +67,10 @@ export async function usersRoutes(fastify: FastifyInstance) {
   // ── PATCH /users/:id/role — Admin: change user role ───────────────────────
   fastify.patch('/:id/role', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: {
+      tags: ['users'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const { id }   = req.params as { id: string };
     const schema   = z.object({ role: z.enum(['aluno', 'professor', 'admin']) });
@@ -67,6 +90,10 @@ export async function usersRoutes(fastify: FastifyInstance) {
   // ── PATCH /users/:id/status — Admin: suspend or activate ─────────────────
   fastify.patch('/:id/status', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: {
+      tags: ['users'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const { id }     = req.params as { id: string };
     const schema     = z.object({ status: z.enum(['ativo', 'suspenso']) });
@@ -86,6 +113,10 @@ export async function usersRoutes(fastify: FastifyInstance) {
   // ── GET /users/profile — Self: logged-in user updates their profile ────────
   fastify.put('/profile', {
     preHandler: [requireAuth],
+    schema: {
+      tags: ['users'],
+      security: [{ bearerAuth: [] }]
+    }
   }, async (req, reply) => {
     const schema = z.object({
       nome:        z.string().min(2).max(120).optional(),

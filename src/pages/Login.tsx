@@ -1,11 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { useAuthStore } from '../store/useAuthStore';
-// import { api } from '../services/api';
+import { api } from '../services/api';
 import { Compass } from 'lucide-react';
 
 const loginSchema = z.object({
@@ -17,47 +17,51 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const setAuth = useAuthStore(state => state.setAuth);
+
+  const successMessage = location.state?.message;
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema)
   });
 
-  const handleQuickLogin = (role: 'aluno' | 'professor') => {
-    setAuth({
-      id_usuario: role === 'professor' ? 2 : 1,
-      tenant_id: 1,
-      nome: role === 'professor' ? "Prof. João" : "Aluno Kauã",
-      email: `${role}@virtulearning.com`,
-      tipo_usuario: role
-    }, "fake_jwt_token");
-
-    navigate(role === 'professor' ? '/teacher' : '/dashboard');
-  };
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      // Mocking success based on email typed
-      const role = data.email.includes('prof') ? 'professor' : 'aluno';
-      
-      await new Promise(r => setTimeout(r, 1000));
-      setAuth({
-        id_usuario: role === 'professor' ? 2 : 1,
-        tenant_id: 1,
-        nome: role === 'professor' ? "Prof. Especialista" : "Aluno Padrão",
+      const res = await api.post('/auth/login', {
         email: data.email,
-        tipo_usuario: role
-      }, "fake_jwt_token");
+        senha: data.senha
+      });
 
-      navigate(role === 'professor' ? '/teacher' : '/dashboard');
-    } catch (error) {
+      const { user, access_token } = res.data;
+      
+      setAuth({
+        id: user.id,
+        tenant_id: user.tenant_id,
+        nome: user.nome,
+        email: user.email,
+        tipo_usuario: user.tipo_usuario
+      }, access_token);
+
+      if (user.tipo_usuario === 'admin') navigate('/admin');
+      else if (user.tipo_usuario === 'professor') navigate('/teacher');
+      else navigate('/dashboard');
+    } catch (error: any) {
       console.error(error);
-      alert('Erro ao realizar login');
+      const msg = error.response?.data?.error || 'Erro ao realizar login. Verifique suas credenciais.';
+      alert(msg);
     }
   };
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {successMessage && (
+        <div className="mb-6 p-4 rounded-xl bg-accent/10 border border-accent/20 text-accent text-sm font-medium">
+          {successMessage}
+        </div>
+      )}
+
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white mb-1">Bem-vindo de volta</h1>
         <p className="text-[13px] text-[#71717a]">Digite suas credenciais para acessar.</p>
@@ -91,28 +95,7 @@ export const Login = () => {
           Acessar Plataforma
         </Button>
 
-        {/* Quick Login Hacks for Dev */}
-        <div className="pt-4 border-t border-border mt-4">
-          <p className="text-xs text-center text-muted mb-3 uppercase tracking-wider font-bold">Acesso Rápido (Dev)</p>
-          <div className="flex gap-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full text-xs font-bold border-border/50 text-white hover:bg-white/5" 
-              onClick={() => handleQuickLogin('aluno')}
-            >
-              Sou Aluno
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full text-xs font-bold border-accent/30 text-accent hover:bg-accent/10" 
-              onClick={() => handleQuickLogin('professor')}
-            >
-              Sou Professor
-            </Button>
-          </div>
-        </div>
+
       </form>
 
       <div className="mt-6 pt-6 flex flex-col items-center gap-4 text-xs">

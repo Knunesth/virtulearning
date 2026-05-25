@@ -194,3 +194,30 @@ SELECT
 FROM information_schema.TABLES
 WHERE TABLE_SCHEMA = 'virtulearning'
 ORDER BY TABLE_NAME;
+
+-- ==============================================================================
+-- VIRTULEARNING — MIGRATION CONSOLIDADA
+-- ==============================================================================
+-- Este arquivo aplica as alterações de schema de forma idempotente.
+-- Seguro para ser executado no console web do TiDB Cloud.
+
+-- 1. Adicionar campos de convite de professor no User
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `invite_token` VARCHAR(255) NULL;
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `invite_token_expires` DATETIME(3) NULL;
+
+-- 2. Adicionar campo descrição na Lesson
+ALTER TABLE `lessons` ADD COLUMN IF NOT EXISTS `descricao` TEXT NULL;
+
+-- 3. Criar tabela de progresso de aulas (LessonProgress)
+CREATE TABLE IF NOT EXISTS `lesson_progress` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `lesson_id` INT NOT NULL,
+  `completed_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  
+  -- Índices e restrições de unicidade para o relationMode = "prisma"
+  UNIQUE KEY `lesson_progress_user_id_lesson_id_key` (`user_id`, `lesson_id`),
+  INDEX `lesson_progress_user_id_idx` (`user_id`),
+  INDEX `lesson_progress_lesson_id_idx` (`lesson_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

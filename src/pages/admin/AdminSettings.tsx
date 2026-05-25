@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   Save, Globe, Mail, Shield, AlertTriangle, ToggleLeft, ToggleRight,
   Palette, BookOpen, CreditCard, Webhook, BarChart3, Lock, Bell,
-  ChevronRight, ExternalLink, Copy, RefreshCw, Check, Eye, EyeOff
+  Copy, RefreshCw, Check, Eye, EyeOff
 } from 'lucide-react';
 
 type Section = 'geral' | 'plataforma' | 'email' | 'pagamentos' | 'integracoes' | 'privacidade' | 'perigo';

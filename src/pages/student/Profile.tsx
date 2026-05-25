@@ -1,21 +1,23 @@
-import { useState, useRef, useEffect, ChangeEvent } from 'react';
-import { Camera, User, Lock, Bell, Save, AlertCircle, CheckCircle2, MapPin, Briefcase, Link as LinkIcon, Code, Globe, FileText, Shield, MonitorSmartphone, Palette, Globe2, Eye, Moon, Sun } from 'lucide-react';
-import { useAuthStore } from '../../store/useAuthStore';
+import { useState, useRef, type ChangeEvent, useEffect } from 'react';
+import { Camera, User, Lock, Bell, Save, AlertCircle, CheckCircle2, MapPin, Briefcase, Link as LinkIcon, Code, Globe, FileText, Shield, MonitorSmartphone, Palette, Globe2, Eye, Moon, Sun, Loader2 } from 'lucide-react';
+
+import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 
 export const Profile = () => {
-  const { user } = useAuthStore();
+  const { data: profile } = useProfile();
+  const updateProfile = useUpdateProfile();
   const [activeTab, setActiveTab] = useState<'personal' | 'security' | 'preferences'>('personal');
   const [isDirty, setIsDirty] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form states
+  // Form states — inicializa com dados do backend quando disponíveis
   const [formData, setFormData] = useState({
-    nome: user?.nome || '',
-    email: user?.email || '',
+    nome: '',
+    email: '',
     telefone: '',
     avatar: '',
     bio: '',
@@ -25,6 +27,21 @@ export const Profile = () => {
     github: '',
     site: ''
   });
+
+  // Popula o formulário quando os dados chegam do backend
+  useEffect(() => {
+    if (profile) {
+      setFormData((prev) => ({
+        ...prev,
+        nome: profile.nome ?? '',
+        email: profile.email ?? '',
+        bio: profile.bio ?? '',
+        linkedin: profile.linkedin_url ?? '',
+        telefone: profile.telefone ?? '',
+        avatar: profile.avatar_url ?? '',
+      }));
+    }
+  }, [profile]);
 
   const [securityData, setSecurityData] = useState({
     currentPassword: '',
@@ -55,7 +72,7 @@ export const Profile = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setIsDirty(true);
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -86,11 +103,21 @@ export const Profile = () => {
     fileInputRef.current?.click();
   };
 
-  const handleSave = () => {
-    // Simulando um salvamento no backend
-    setIsDirty(false);
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 3000);
+  const handleSave = async () => {
+    try {
+      await updateProfile.mutateAsync({
+        nome: formData.nome,
+        bio: formData.bio,
+        telefone: formData.telefone,
+        linkedin_url: formData.linkedin,
+        avatar_url: formData.avatar || undefined,
+      });
+      setIsDirty(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch {
+      // Erro será exibido pelo toast ou pelo estado de erro
+    }
   };
 
   return (
@@ -560,7 +587,7 @@ export const Profile = () => {
                       </div>
                       <select 
                         value={preferences.language}
-                        onChange={(e) => { setIsDirty(true); setPreferences({...preferences, language: e.target.value}); }}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => { setIsDirty(true); setPreferences({...preferences, language: e.target.value}); }}
                         className="w-full h-10 pl-9 pr-4 bg-[#09090b] border border-border/50 rounded-lg text-sm text-white focus:border-accent/50 focus:outline-none appearance-none cursor-pointer"
                       >
                         <option value="pt-BR">Português (Brasil)</option>
@@ -617,13 +644,16 @@ export const Profile = () => {
             {isDirty && <span className="text-xs font-medium text-warning flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-warning animate-pulse"></span> Alterações não salvas</span>}
             {showSuccessMessage && <span className="text-sm font-medium text-success flex items-center gap-1.5"><CheckCircle2 size={16} /> Perfil atualizado com sucesso!</span>}
           </div>
-          <Button 
+          <Button
             onClick={handleSave}
-            disabled={!isDirty}
+            disabled={!isDirty || updateProfile.isPending}
             className="flex items-center gap-2"
           >
-            <Save size={16} />
-            Salvar Alterações
+            {updateProfile.isPending ? (
+              <><Loader2 size={16} className="animate-spin" /> Salvando...</>
+            ) : (
+              <><Save size={16} /> Salvar Alterações</>
+            )}
           </Button>
         </div>
 

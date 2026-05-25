@@ -7,10 +7,13 @@ import { HybridLayout } from '../components/layout/HybridLayout';
 
 import { Login } from '../pages/Login';
 import { Register } from '../pages/Register';
+import { SetPassword } from '../pages/SetPassword';
+import { VerifyEmail } from '../pages/VerifyEmail';
+import { ForgotPassword } from '../pages/ForgotPassword';
+import { ResetPassword } from '../pages/ResetPassword';
 import { TeacherApplication } from '../pages/TeacherApplication';
 import { Catalog } from '../pages/Catalog';
 import { Landing } from '../pages/Landing';
-import { TeacherLayout } from '../components/layout/TeacherLayout';
 import { TeacherOverview } from '../pages/teacher/TeacherOverview';
 import { TeacherCourses } from '../pages/teacher/TeacherCourses';
 import { TeacherMessages } from '../pages/teacher/TeacherMessages';
@@ -23,7 +26,6 @@ import { Cookies } from '../pages/Cookies';
 import { About } from '../pages/About';
 import { Enterprise } from '../pages/Enterprise';
 
-import { AdminLayout } from '../components/layout/AdminLayout';
 import { AdminOverview } from '../pages/admin/AdminOverview';
 import { AdminUsers } from '../pages/admin/AdminUsers';
 import { AdminApplications } from '../pages/admin/AdminApplications';
@@ -41,6 +43,9 @@ import { Ranking } from '../pages/student/Ranking';
 import { Quiz } from '../pages/student/Quiz';
 import { Profile } from '../pages/student/Profile';
 import { MyCourses } from '../pages/student/MyCourses';
+import { CourseDetail } from '../pages/student/CourseDetail';
+import { WatchCourse } from '../pages/student/WatchCourse';
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -65,33 +70,40 @@ export const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
+      <Route path="/set-password" element={<SetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* Private Routes */}
+      {/* Unified Private Routes under DashboardLayout */}
       <Route element={<ProtectedRoute allowedRoles={['aluno', 'professor', 'admin']} />}>
-        <Route element={<DashboardLayout />}>
+        <Route path="/course/:id/learn" element={<WatchCourse />} />
+      </Route>
+
+      <Route element={<DashboardLayout />}>
+        
+        {/* Student/General Routes (allowed for all) */}
+        <Route element={<ProtectedRoute allowedRoles={['aluno', 'professor', 'admin']} />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/my-courses" element={<MyCourses />} />
+          <Route path="/course/:id" element={<CourseDetail />} />
           <Route path="/resume" element={<Resume />} />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
-      </Route>
 
-      {/* Teacher Routes */}
-      <Route element={<ProtectedRoute allowedRoles={['professor', 'admin']} />}>
-        <Route element={<TeacherLayout />}>
+        {/* Teacher Routes */}
+        <Route element={<ProtectedRoute allowedRoles={['professor', 'admin']} />}>
           <Route path="/teacher" element={<TeacherOverview />} />
           <Route path="/teacher/courses" element={<TeacherCourses />} />
           <Route path="/teacher/courses/:id/builder" element={<TeacherCourseBuilder />} />
           <Route path="/teacher/messages" element={<TeacherMessages />} />
           <Route path="/teacher/profile" element={<TeacherProfile />} />
         </Route>
-      </Route>
 
-      {/* Admin Routes */}
-      <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-        <Route element={<AdminLayout />}>
+        {/* Admin Routes */}
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route path="/admin" element={<AdminOverview />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/applications" element={<AdminApplications />} />
@@ -101,6 +113,7 @@ export const AppRoutes = () => {
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/logs" element={<AdminLogs />} />
         </Route>
+        
       </Route>
     </Routes>
   );

@@ -7,27 +7,55 @@ export async function messagesRoutes(fastify: FastifyInstance) {
   // ── GET /messages/conversations — Professor: list conversation threads ─────
   fastify.get('/conversations', {
     preHandler: [requireAuth],
+    schema: { tags: ['messages'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
     const userId = req.user!.sub;
 
-    // Get unique conversations (distinct aluno_id + professor_id pairs)
-    const messages = await prisma.message.findMany({
-      where: {
-        OR: [{ aluno_id: userId }, { professor_id: userId }],
-      },
-      distinct: ['aluno_id', 'professor_id'],
-      orderBy: { created_at: 'desc' },
-      include: {
-        remetente: { select: { id: true, nome: true, avatar_url: true } },
-      },
+    const querySchema = z.object({
+      page: z.coerce.number().min(1).default(1),
+      limit: z.coerce.number().min(1).max(50).default(10)
     });
+    
+    const parse = querySchema.safeParse(req.query);
+    if (!parse.success) return reply.status(400).send({ error: 'Parâmetros de paginação inválidos.' });
 
-    return reply.send(messages);
+    const { page, limit } = parse.data;
+    const skip = (page - 1) * limit;
+
+    // Get unique conversations (distinct aluno_id + professor_id pairs)
+    const [messages, groups] = await Promise.all([
+      prisma.message.findMany({
+        where: {
+          OR: [{ aluno_id: userId }, { professor_id: userId }],
+        },
+        distinct: ['aluno_id', 'professor_id'],
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          remetente: { select: { id: true, nome: true, avatar_url: true } },
+        },
+      }),
+      prisma.message.groupBy({
+        by: ['aluno_id', 'professor_id'],
+        where: { OR: [{ aluno_id: userId }, { professor_id: userId }] }
+      })
+    ]);
+
+    const total = groups.length;
+
+    return reply.send({
+      data: messages,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    });
   });
 
   // ── GET /messages/:professsorId/:alunoId — Get thread messages ────────────
   fastify.get('/:professorId/:alunoId', {
     preHandler: [requireAuth],
+    schema: { tags: ['messages'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
     const { professorId, alunoId } = req.params as { professorId: string; alunoId: string };
     const userId = req.user!.sub;
@@ -46,7 +74,7 @@ export async function messagesRoutes(fastify: FastifyInstance) {
 
     // Mark as read
     await prisma.message.updateMany({
-      where: { professor_id: pId, aluno_id: aId, aluno_id: { not: userId } },
+      where: { professor_id: pId, aluno_id: aId, lida: false },
       data: { lida: true },
     });
 
@@ -56,6 +84,7 @@ export async function messagesRoutes(fastify: FastifyInstance) {
   // ── POST /messages — Send a message ───────────────────────────────────────
   fastify.post('/', {
     preHandler: [requireAuth],
+    schema: { tags: ['messages'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
     const schema = z.object({
       professor_id: z.number().int(),

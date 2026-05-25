@@ -8,6 +8,9 @@ import fastifyCors from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyCookie from '@fastify/cookie';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+import { startKeepAlive } from './utils/keepAlive';
 
 import { authRoutes }         from './modules/auth/auth.routes';
 import { usersRoutes }        from './modules/users/users.routes';
@@ -15,6 +18,9 @@ import { coursesRoutes }      from './modules/courses/courses.routes';
 import { applicationsRoutes } from './modules/applications/applications.routes';
 import { enrollmentsRoutes }  from './modules/enrollments/enrollments.routes';
 import { messagesRoutes }     from './modules/messages/messages.routes';
+import { lessonsRoutes }      from './modules/lessons/lessons.routes';
+import { quizzesRoutes }      from './modules/quizzes/quizzes.routes';
+import { rankingRoutes }      from './modules/ranking/ranking.routes';
 
 import prisma from './config/prisma';
 
@@ -45,7 +51,7 @@ async function bootstrap() {
   });
 
   // ── 2. Security: CORS ────────────────────────────────────────────────────────
-  const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',');
+  const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',');
   await app.register(fastifyCors, {
     origin: (origin, cb) => {
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
@@ -73,20 +79,41 @@ async function bootstrap() {
   // ── 5. Stricter rate limit for auth routes ───────────────────────────────────
   // (Applied at the route level as a scope override)
 
-  // ── 6. Health Check ──────────────────────────────────────────────────────────
+  // ── 6. Swagger / OpenAPI ───────────────────────────────────────────────────────
+  await app.register(swagger, {
+    openapi: {
+      info: { title: 'VirtuLearning API', version: '1.0.0' },
+      components: {
+        securitySchemes: {
+          bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }
+        }
+      }
+    }
+  });
+
+  await app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: { docExpansion: 'list' }
+  });
+
+  // ── 7. Health Check ──────────────────────────────────────────────────────────
   app.get('/health', async () => ({
     status: 'ok',
     timestamp: new Date().toISOString(),
     env: process.env.NODE_ENV,
   }));
 
-  // ── 7. Register API modules ──────────────────────────────────────────────────
+  // ── 8. Register API modules ──────────────────────────────────────────────────
   await app.register(authRoutes,         { prefix: '/api/auth' });
   await app.register(usersRoutes,        { prefix: '/api/users' });
   await app.register(coursesRoutes,      { prefix: '/api/courses' });
   await app.register(applicationsRoutes, { prefix: '/api/applications' });
   await app.register(enrollmentsRoutes,  { prefix: '/api/enrollments' });
   await app.register(messagesRoutes,     { prefix: '/api/messages' });
+  // Módulos e aulas: rotas mistas em /api/courses/:id/modules, /api/modules/:id e /api/lessons/:id
+  await app.register(lessonsRoutes,      { prefix: '/api' });
+  await app.register(quizzesRoutes,      { prefix: '/api' });
+  await app.register(rankingRoutes,      { prefix: '/api/ranking' });
 
   // ── 8. Global error handler ───────────────────────────────────────────────────
   app.setErrorHandler((error, req, reply) => {
@@ -110,13 +137,16 @@ async function bootstrap() {
     await prisma.$connect();
     app.log.info('✅ Conectado ao banco de dados TiDB');
   } catch (e) {
-    app.log.error('❌ Falha ao conectar ao banco de dados:', e);
+    app.log.error({ err: e }, '❌ Falha ao conectar ao banco de dados.');
     process.exit(1);
   }
 
   await app.listen({ port: PORT, host: '0.0.0.0' });
   app.log.info(`🚀 VirtuLearning API rodando em http://localhost:${PORT}`);
   app.log.info(`📋 Health check: http://localhost:${PORT}/health`);
+
+  const appUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  startKeepAlive(appUrl);
 }
 
 // Graceful shutdown

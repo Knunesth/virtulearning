@@ -1,4 +1,4 @@
-import { Users, DollarSign, BookOpen, UserCheck, TrendingUp, ArrowUpRight, ArrowDownRight, MoreHorizontal, ShieldAlert, Star, CheckCircle2 } from 'lucide-react';
+import { Users, DollarSign, BookOpen, UserCheck, ArrowUpRight, ArrowDownRight, MoreHorizontal, ShieldAlert, Star, CheckCircle2 } from 'lucide-react';
 
 const Sparkline = ({ color, up }: { color: string; up: boolean }) => {
   const points = up

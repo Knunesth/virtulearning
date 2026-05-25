@@ -69,6 +69,12 @@ model User {
   email_verificado     Boolean   @default(false)
   refresh_token_hash   String?   @db.VarChar(255)
   ultimo_login         DateTime?
+  invite_token         String?   @db.VarChar(255)
+  invite_token_expires DateTime?
+  verification_token         String?   @db.VarChar(255)
+  verification_token_expires DateTime?
+  reset_token                String?   @db.VarChar(255)
+  reset_token_expires        DateTime?
 
   // Perfil
   avatar_url    String?   @db.VarChar(500)
@@ -82,10 +88,15 @@ model User {
   updated_at    DateTime  @updatedAt
 
   // Relações
-  cursos            Course[]
-  matriculas        Enrollment[]
-  mensagens_enviadas Message[]     @relation("MensagensEnviadas")
-  candidatura       TeacherApplication?
+  cursos               Course[]
+  matriculas           Enrollment[]
+  mensagens_enviadas   Message[]          @relation("MensagensEnviadas")
+  candidatura          TeacherApplication?
+  lesson_progresses    LessonProgress[]
+  quizAttempts         QuizAttempt[]
+  xpEvents             XPEvent[]
+
+  xp                   Int                @default(0)
 
   @@index([email])
   @@index([tipo_usuario])
@@ -111,6 +122,7 @@ model Course {
   professor    User          @relation(fields: [professor_id], references: [id])
   modulos      Module[]
   matriculas   Enrollment[]
+  quizzes      Quiz[]
 
   @@index([professor_id])
   @@index([status])
@@ -131,18 +143,36 @@ model Module {
 }
 
 model Lesson {
-  id         Int    @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
   modulo_id  Int
-  titulo     String @db.VarChar(200)
+  titulo     String  @db.VarChar(200)
+  descricao  String? @db.Text
   url_video  String? @db.VarChar(500)
-  duracao    Int    @default(0) // Em segundos
-  ordem      Int    @default(0)
+  duracao    Int     @default(0) // Em segundos
+  ordem      Int     @default(0)
   gratuita   Boolean @default(false)
 
-  modulo Module @relation(fields: [modulo_id], references: [id])
+  modulo           Module           @relation(fields: [modulo_id], references: [id])
+  lesson_progresses LessonProgress[]
 
   @@index([modulo_id])
   @@map("lessons")
+}
+
+// Rastreia quais aulas cada aluno já concluiu
+model LessonProgress {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  lesson_id    Int
+  completed_at DateTime @default(now())
+
+  user   User   @relation(fields: [user_id], references: [id])
+  lesson Lesson @relation(fields: [lesson_id], references: [id])
+
+  @@unique([user_id, lesson_id])
+  @@index([user_id])
+  @@index([lesson_id])
+  @@map("lesson_progress")
 }
 
 model Enrollment {
@@ -214,4 +244,68 @@ model AuditLog {
   @@index([admin_id])
   @@index([created_at])
   @@map("audit_logs")
+}
+
+model Quiz {
+  id           Int           @id @default(autoincrement())
+  courseId     Int
+  titulo       String
+  passingScore Int           @default(70)
+  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions    Question[]
+  attempts     QuizAttempt[]
+  createdAt    DateTime      @default(now())
+
+  @@index([courseId])
+  @@map("quizzes")
+}
+
+model Question {
+  id      Int      @id @default(autoincrement())
+  quizId  Int
+  texto   String
+  ordem   Int      @default(0)
+  quiz    Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options Option[]
+
+  @@index([quizId])
+  @@map("questions")
+}
+
+model Option {
+  id         Int      @id @default(autoincrement())
+  questionId Int
+  texto      String
+  isCorrect  Boolean  @default(false)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@map("options")
+}
+
+model QuizAttempt {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  quizId      Int
+  score       Int
+  passed      Boolean
+  completedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+  @@map("quiz_attempts")
+}
+
+model XPEvent {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  tipo      String   @db.VarChar(50)
+  amount    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("xp_events")
 }

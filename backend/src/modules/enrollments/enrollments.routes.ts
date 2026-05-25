@@ -1,11 +1,14 @@
 import { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import prisma from '../../config/prisma';
 import { requireAuth, requireRole } from '../../middleware/auth';
+import { addXP } from '../../utils/xp';
 
 export async function enrollmentsRoutes(fastify: FastifyInstance) {
   // ── POST /enrollments — Aluno: enroll in a course ─────────────────────────
   fastify.post('/', {
     preHandler: [requireAuth, requireRole('aluno')],
+    schema: { tags: ['enrollments'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
     const { curso_id } = req.body as { curso_id: number };
     if (!curso_id) return reply.status(400).send({ error: 'curso_id é obrigatório.' });
@@ -28,26 +31,49 @@ export async function enrollmentsRoutes(fastify: FastifyInstance) {
   // ── GET /enrollments/my — Aluno: list own enrollments ─────────────────────
   fastify.get('/my', {
     preHandler: [requireAuth],
+    schema: { tags: ['enrollments'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
-    const enrollments = await prisma.enrollment.findMany({
-      where: { aluno_id: req.user!.sub },
-      include: {
-        curso: {
-          include: {
-            professor: { select: { id: true, nome: true } },
-            _count: { select: { modulos: true } },
+    const querySchema = z.object({
+      page: z.coerce.number().min(1).default(1),
+      limit: z.coerce.number().min(1).max(50).default(10)
+    });
+    
+    const parse = querySchema.safeParse(req.query);
+    if (!parse.success) return reply.status(400).send({ error: 'Parâmetros de paginação inválidos.' });
+
+    const { page, limit } = parse.data;
+    const skip = (page - 1) * limit;
+
+    const [enrollments, total] = await Promise.all([
+      prisma.enrollment.findMany({
+        where: { aluno_id: req.user!.sub },
+        skip,
+        take: limit,
+        include: {
+          curso: {
+            include: {
+              professor: { select: { id: true, nome: true } },
+              _count: { select: { modulos: true } },
+            },
           },
         },
-      },
-      orderBy: { created_at: 'desc' },
-    });
+        orderBy: { created_at: 'desc' },
+      }),
+      prisma.enrollment.count({ where: { aluno_id: req.user!.sub } })
+    ]);
 
-    return reply.send(enrollments);
+    return reply.send({
+      data: enrollments,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    });
   });
 
   // ── PATCH /enrollments/:id/progress — Aluno: update progress ──────────────
   fastify.patch('/:id/progress', {
     preHandler: [requireAuth],
+    schema: { tags: ['enrollments'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
     const { id }        = req.params as { id: string };
     const { progresso } = req.body as { progresso: number };
@@ -61,6 +87,8 @@ export async function enrollmentsRoutes(fastify: FastifyInstance) {
     });
     if (!enrollment) return reply.status(404).send({ error: 'Matrícula não encontrada.' });
 
+    const wasAlreadyCompleted = enrollment.progresso === 100;
+
     const updated = await prisma.enrollment.update({
       where: { id: enrollment.id },
       data: {
@@ -68,6 +96,10 @@ export async function enrollmentsRoutes(fastify: FastifyInstance) {
         status: progresso === 100 ? 'concluida' : 'ativa',
       },
     });
+
+    if (progresso === 100 && !wasAlreadyCompleted) {
+      await addXP(req.user!.sub, 'curso_concluido', 200);
+    }
 
     return reply.send(updated);
   });

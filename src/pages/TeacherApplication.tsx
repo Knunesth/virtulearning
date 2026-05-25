@@ -21,7 +21,7 @@ export const TeacherApplication = () => {
     resolver: zodResolver(applicationSchema)
   });
 
-  const onSubmit = async (data: ApplicationForm) => {
+  const onSubmit = async () => {
     try {
       await new Promise(r => setTimeout(r, 1500)); // Fake API
       // In a real app we would send this data to the backend

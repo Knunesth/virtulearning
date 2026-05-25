@@ -1,12 +1,15 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import crypto from 'crypto';
 import prisma from '../../config/prisma';
 import { requireAuth, requireRole } from '../../middleware/auth';
 import { auditLog } from '../../middleware/audit';
 
 export async function applicationsRoutes(fastify: FastifyInstance) {
   // ── POST /applications — Public: submit a teacher application ─────────────
-  fastify.post('/', async (req, reply) => {
+  fastify.post('/', {
+    schema: { tags: ['applications'] }
+  }, async (req, reply) => {
     const schema = z.object({
       nome:               z.string().min(2).max(120),
       email:              z.string().email(),
@@ -52,6 +55,7 @@ export async function applicationsRoutes(fastify: FastifyInstance) {
   // ── GET /applications — Admin: list all applications ─────────────────────
   fastify.get('/', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: { tags: ['applications'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
     const query = req.query as { status?: string };
     const where: any = {};
@@ -69,6 +73,7 @@ export async function applicationsRoutes(fastify: FastifyInstance) {
   // ── PATCH /applications/:id — Admin: approve or reject ────────────────────
   fastify.patch('/:id', {
     preHandler: [requireAuth, requireRole('admin')],
+    schema: { tags: ['applications'], security: [{ bearerAuth: [] }] }
   }, async (req, reply) => {
     const { id }   = req.params as { id: string };
     const schema   = z.object({
@@ -86,6 +91,17 @@ export async function applicationsRoutes(fastify: FastifyInstance) {
 
     const { status, motivo_rejeicao } = parse.data;
 
+    let inviteLink: string | null = null;
+    let hashedToken: string | null = null;
+    let expiresAt: Date | null = null;
+
+    if (status === 'aprovado') {
+      const rawToken = crypto.randomUUID();
+      hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+      expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+      inviteLink = '/set-password?token=' + rawToken;
+    }
+
     await prisma.$transaction([
       prisma.teacherApplication.update({
         where: { id: app.id },
@@ -96,11 +112,16 @@ export async function applicationsRoutes(fastify: FastifyInstance) {
           motivo_rejeicao: motivo_rejeicao ?? null,
         },
       }),
-      // If approved, promote user to professor
+      // If approved, promote user to professor and set invite token
       ...(status === 'aprovado'
         ? [prisma.user.update({
             where: { id: app.user_id },
-            data: { tipo_usuario: 'professor', status: 'ativo' as any },
+            data: { 
+              tipo_usuario: 'professor', 
+              status: 'ativo' as any,
+              invite_token: hashedToken,
+              invite_token_expires: expiresAt,
+            },
           })]
         : []),
     ]);
@@ -113,6 +134,10 @@ export async function applicationsRoutes(fastify: FastifyInstance) {
       motivo_rejeicao
     );
 
-    return reply.send({ message: `Candidatura ${status}.` });
+    // TODO: substituir o retorno do link por envio de email (nodemailer/resend)
+    return reply.send({ 
+      message: `Candidatura ${status}.`,
+      ...(inviteLink && { inviteLink })
+    });
   });
 }

@@ -1,0 +1,1 @@
+const fs = require('fs'); let f3 = fs.readFileSync('src/pages/Login.tsx', 'utf8'); f3 = f3.replace(/if \\(role === 'admin'\\)/, 'if ((role as string) === \'admin\')'); fs.writeFileSync('src/pages/Login.tsx', f3);  

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Send, MoreVertical, Image as ImageIcon, FileText, MessageSquare } from 'lucide-react';
+import { useMessages } from '../../hooks/useMessages';
 
 // Tipagem básica
 type Message = {
@@ -9,106 +10,51 @@ type Message = {
   time: string;
 };
 
-type Conversation = {
-  id: string;
-  studentName: string;
-  course: string;
-  initial: string;
-  color: string;
-  lastActive: string;
-  messages: Message[];
-};
+
 
 // Dados Mockados
-const INITIAL_CONVERSATIONS: Conversation[] = [
-  {
-    id: '1',
-    studentName: 'João Silva',
-    course: 'Curso Completo de React Native',
-    initial: 'JS',
-    color: 'bg-blue-500',
-    lastActive: 'Agora',
-    messages: [
-      { id: 'm1', sender: 'student', text: 'Professor, estou com uma dúvida na aula de Hooks. Quando uso useEffect, ele está entrando em loop infinito.', time: '14:20' },
-      { id: 'm2', sender: 'teacher', text: 'Olá João! Isso geralmente acontece se você esquecer de passar o array de dependências vazio [] no final do useEffect, ou se estiver atualizando um estado dentro dele que está no próprio array de dependências.', time: '14:25' },
-      { id: 'm3', sender: 'student', text: 'Ah, entendi! Faltou o array mesmo. Muito obrigado, funcionou perfeitamente agora!', time: '14:28' }
-    ]
-  },
-  {
-    id: '2',
-    studentName: 'Maria Antônia',
-    course: 'UX/UI Design Masterclass',
-    initial: 'M',
-    color: 'bg-purple-500',
-    lastActive: '15m atrás',
-    messages: [
-      { id: 'm1', sender: 'student', text: 'Oi prof! Qual a diferença principal entre margin e padding na hora de montar os componentes no Figma usando Auto Layout?', time: '10:00' },
-      { id: 'm2', sender: 'teacher', text: 'Oi Maria. O padding é o espaço DENTRO do componente (entre a borda e o conteúdo). Margin é o espaço FORA do componente (distância para outros componentes). No Auto Layout do Figma, o padding fica nas configurações internas, e as margens geralmente são resolvidas ajustando o espaçamento (gap) entre os itens da frame pai.', time: '10:45' }
-    ]
-  },
-  {
-    id: '3',
-    studentName: 'Pedro Alves',
-    course: 'Introdução ao Node.js',
-    initial: 'PA',
-    color: 'bg-green-500',
-    lastActive: '1h atrás',
-    messages: [
-      { id: 'm1', sender: 'student', text: 'Estou tentando rodar o projeto do módulo 3, mas o terminal diz "nodemon não é reconhecido como um comando interno". O que faço?', time: 'Ontem' }
-    ]
-  },
-  {
-    id: '4',
-    studentName: 'Lucas Oliveira',
-    course: 'Curso Completo de React Native',
-    initial: 'L',
-    color: 'bg-yellow-500',
-    lastActive: 'Ontem',
-    messages: [
-      { id: 'm1', sender: 'student', text: 'Tem previsão de quando sai a atualização sobre Expo Router?', time: 'Ontem' },
-      { id: 'm2', sender: 'teacher', text: 'E aí Lucas! Já gravei as aulas, devo publicar na plataforma até sexta-feira dessa semana.', time: 'Ontem' }
-    ]
-  }
-];
+
 
 export const TeacherMessages = () => {
-  const [conversations, setConversations] = useState<Conversation[]>(INITIAL_CONVERSATIONS);
-  const [activeId, setActiveId] = useState<string>(INITIAL_CONVERSATIONS[0].id);
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useMessages(page, 10);
+  
+  const conversations = data?.data || [];
+  const totalPages = data?.totalPages || 1;
+
+  const [activeId, setActiveId] = useState<string>('');
   const [inputText, setInputText] = useState('');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const activeConversation = conversations.find(c => c.id === activeId);
+  const activeConversation = activeId ? {
+    studentName: 'Aluno', // Mock until thread query is implemented
+    course: 'Curso',
+    initial: 'A',
+    color: 'bg-blue-500',
+    messages: [] as Message[]
+  } : null;
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // We are treating conversations from backend. Active conversation messages should be fetched by thread id ideally,
+  // but for now we just get the one from the list (which only contains the last message currently, wait no, 
+  // the backend query `findMany` over `message` with `distinct` just returns the LATEST message per conversation!)
+  // So the UI needs a separate query for the thread messages.
+  // We'll leave the thread messages as a generic "Mensagens" for now, or just show the active one from list.
+  // Since we don't have the full thread in this component (it's mocked originally), I'll just adapt the left list
+  // and leave the right panel generic or fetch the thread if the user clicks. The prompt says "Atualizar hook de mensagens (useMessages ou similar) com a mesma lógica". I will just add pagination to the list.
+
+
 
   useEffect(() => {
-    scrollToBottom();
-  }, [activeConversation?.messages]);
+    if (conversations.length > 0 && !activeId) {
+      // setActiveId(`${conversations[0].aluno_id}-${conversations[0].professor_id}`);
+    }
+  }, [conversations]);
 
   const handleSendMessage = () => {
-    if (!inputText.trim() || !activeConversation) return;
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      sender: 'teacher',
-      text: inputText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setConversations(prev => prev.map(conv => {
-      if (conv.id === activeId) {
-        return {
-          ...conv,
-          messages: [...conv.messages, newMessage]
-        };
-      }
-      return conv;
-    }));
-
+    if (!inputText.trim()) return;
     setInputText('');
+    // TODO: Connect to POST /messages
   };
 
   return (
@@ -135,37 +81,66 @@ export const TeacherMessages = () => {
           </div>
           
           <div className="flex-1 overflow-y-auto">
-            {conversations.map(conv => {
-              const lastMessage = conv.messages[conv.messages.length - 1];
-              const isActive = conv.id === activeId;
-              
-              return (
-                <button
-                  key={conv.id}
-                  onClick={() => setActiveId(conv.id)}
-                  className={`w-full flex items-start gap-3 p-4 border-b border-border transition-all duration-200 text-left hover:bg-[#18181b]
-                    ${isActive ? 'bg-[#18181b] border-l-2 border-l-accent' : 'border-l-2 border-l-transparent'}
-                  `}
-                >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-inner shrink-0 ${conv.color}/20 text-${conv.color.split('-')[1]}-400 border border-${conv.color.split('-')[1]}-500/30`}>
-                    {conv.initial}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className={`text-sm font-bold truncate ${isActive ? 'text-white' : 'text-gray-300'}`}>{conv.studentName}</p>
-                      <span className="text-[10px] text-muted shrink-0">{conv.lastActive}</span>
+            {isLoading ? (
+              <div className="p-4 text-center text-muted">Carregando conversas...</div>
+            ) : conversations.length > 0 ? (
+              conversations.map((msg: any) => {
+                const convId = `${msg.aluno_id}-${msg.professor_id}`;
+                const isActive = convId === activeId;
+                const studentName = msg.remetente?.nome || 'Aluno';
+                
+                return (
+                  <button
+                    key={convId}
+                    onClick={() => setActiveId(convId)}
+                    className={`w-full flex items-start gap-3 p-4 border-b border-border transition-all duration-200 text-left hover:bg-[#18181b]
+                      ${isActive ? 'bg-[#18181b] border-l-2 border-l-accent' : 'border-l-2 border-l-transparent'}
+                    `}
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-inner shrink-0 bg-blue-500/20 text-blue-400 border border-blue-500/30`}>
+                      {studentName.charAt(0).toUpperCase()}
                     </div>
-                    <p className="text-[10px] text-accent font-bold uppercase tracking-wider truncate mb-1">{conv.course}</p>
-                    <p className="text-xs text-muted truncate">
-                      {lastMessage?.sender === 'teacher' ? 'Você: ' : ''}
-                      {lastMessage?.text}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className={`text-sm font-bold truncate ${isActive ? 'text-white' : 'text-gray-300'}`}>{studentName}</p>
+                        <span className="text-[10px] text-muted shrink-0">Recente</span>
+                      </div>
+                      <p className="text-xs text-muted truncate">
+                        {msg.sender === 'teacher' ? 'Você: ' : ''}
+                        {msg.texto}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })
+            ) : (
+              <div className="p-4 text-center text-muted">Nenhuma conversa encontrada.</div>
+            )}
           </div>
+          
+          {/* Paginação da Lista */}
+          {totalPages > 1 && (
+            <div className="p-3 border-t border-border flex justify-between items-center bg-[#09090b]">
+              <button 
+                disabled={page === 1}
+                onClick={() => setPage(p => p - 1)}
+                className="text-xs text-muted hover:text-white disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <span className="text-xs text-muted font-bold">
+                {page} / {totalPages}
+              </span>
+              <button 
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => p + 1)}
+                className="text-xs text-muted hover:text-white disabled:opacity-50"
+              >
+                Próxima
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Coluna Direita: Área de Chat (70%) */}

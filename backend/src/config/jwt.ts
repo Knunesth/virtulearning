@@ -19,7 +19,7 @@ export const signRefreshToken = (payload: JwtPayload): string =>
   jwt.sign(payload, REFRESH_SECRET, { expiresIn: REFRESH_EXP });
 
 export const verifyAccessToken = (token: string): JwtPayload =>
-  jwt.verify(token, ACCESS_SECRET) as JwtPayload;
+  jwt.verify(token, ACCESS_SECRET) as unknown as JwtPayload;
 
 export const verifyRefreshToken = (token: string): JwtPayload =>
-  jwt.verify(token, REFRESH_SECRET) as JwtPayload;
+  jwt.verify(token, REFRESH_SECRET) as unknown as JwtPayload;
