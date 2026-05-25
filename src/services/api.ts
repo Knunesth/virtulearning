@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+let API_URL = import.meta.env.VITE_API_BASE_URL || '';
+if (API_URL && !API_URL.endsWith('/api')) {
+  API_URL += '/api';
+}
 
 if (!API_URL) {
   console.error('[api.ts] VITE_API_BASE_URL não definida. Crie o arquivo .env na raiz do frontend.');

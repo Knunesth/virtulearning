@@ -34,7 +34,7 @@ export const Login = () => {
         senha: data.senha
       });
 
-      const { user, access_token } = res.data;
+      const { user, accessToken } = res.data;
       
       setAuth({
         id: user.id,
@@ -42,7 +42,7 @@ export const Login = () => {
         nome: user.nome,
         email: user.email,
         tipo_usuario: user.tipo_usuario
-      }, access_token);
+      }, accessToken);
 
       if (user.tipo_usuario === 'admin') navigate('/admin');
       else if (user.tipo_usuario === 'professor') navigate('/teacher');

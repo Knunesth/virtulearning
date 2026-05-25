@@ -51,7 +51,8 @@ async function bootstrap() {
   });
 
   // ── 2. Security: CORS ────────────────────────────────────────────────────────
-  const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',');
+  const defaultOrigins = 'http://localhost:5173,https://virtulearning-tlhx.vercel.app';
+  const allowedOrigins = (process.env.FRONTEND_URL || defaultOrigins).split(',');
   await app.register(fastifyCors, {
     origin: (origin, cb) => {
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
