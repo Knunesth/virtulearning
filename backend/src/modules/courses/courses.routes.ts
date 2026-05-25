@@ -51,6 +51,26 @@ export async function coursesRoutes(fastify: FastifyInstance) {
     return reply.send({ data: courses, total, page, pages: Math.ceil(total / limit) });
   });
 
+  // ── GET /courses/my — Professor: list own courses (including drafts) ──────
+  fastify.get('/my', {
+    preHandler: [requireAuth, requireRole('professor', 'admin')],
+    schema: {
+      tags: ['courses'],
+      security: [{ bearerAuth: [] }]
+    }
+  }, async (req, reply) => {
+    const courses = await prisma.course.findMany({
+      where: { professor_id: req.user!.sub },
+      orderBy: { created_at: 'desc' },
+      include: {
+        professor: { select: { id: true, nome: true, avatar_url: true } },
+        _count: { select: { matriculas: true, modulos: true } },
+      },
+    });
+
+    return reply.send({ data: courses, total: courses.length, page: 1, pages: 1 });
+  });
+
   // ── GET /courses/:id — Public: get course details ─────────────────────────
   fastify.get('/:id', {
     schema: {

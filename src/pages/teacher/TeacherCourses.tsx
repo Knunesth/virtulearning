@@ -4,16 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
-import { useCourses, useCreateCourse, useUpdateCourse, type Course } from '../../hooks/useCourses';
+import { useMyCourses, useCreateCourse, useUpdateCourse, type Course } from '../../hooks/useCourses';
 import { useAuthStore } from '../../store/useAuthStore';
 
 export const TeacherCourses = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  // Busca os cursos do professor logado filtrando por professor_id via search (aproximação)
-  // Idealmente, o backend teria uma rota /api/courses/my — por ora usamos o público com limit alto
-  const { data: coursesData, isLoading, isError } = useCourses({ limit: 100 });
+  const { data: coursesData, isLoading, isError } = useMyCourses();
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
 
@@ -30,10 +28,7 @@ export const TeacherCourses = () => {
     duracao_horas: '0',
   });
 
-  // Filtra apenas cursos do professor logado
-  const myCourses = (coursesData?.data ?? []).filter(
-    (c) => c.professor.id === user?.id
-  );
+  const myCourses = coursesData?.data ?? [];
 
   const handleOpenEdit = (course: Course | 'new') => {
     if (course === 'new') {

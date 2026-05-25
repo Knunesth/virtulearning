@@ -66,6 +66,20 @@ export function useCourse(id: number | undefined) {
   });
 }
 
+/** Professor: lista os próprios cursos (inclui rascunhos) */
+export function useMyCourses() {
+  const { isAuthenticated } = useAuthStore();
+  return useQuery<CoursesResponse>({
+    queryKey: ['courses', 'my'],
+    queryFn: async () => {
+      const res = await api.get('/courses/my');
+      return res.data;
+    },
+    enabled: isAuthenticated,
+    staleTime: 1000 * 30,
+  });
+}
+
 import { useAuthStore } from '../store/useAuthStore';
 
 /** Admin: lista todos os cursos */
