@@ -1,47 +1,28 @@
 import { DollarSign, ShoppingCart, Users, GraduationCap, ArrowUpRight, TrendingUp, Image as ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const MOCK_CHART_DATA = [
-  { name: 'Jan', revenue: 40000 },
-  { name: 'Fev', revenue: 30000 },
-  { name: 'Mar', revenue: 55000 },
-  { name: 'Abr', revenue: 45000 },
-  { name: 'Mai', revenue: 70000 },
-  { name: 'Jun', revenue: 80050 },
-];
-
-const MOCK_TOP_COURSES = [
-  {
-    id: '1',
-    title: 'Curso Completo de React Native',
-    category: 'Programação',
-    sales: 450,
-    activeStudents: 380,
-    revenue: 45000,
-    cover: 'https://images.unsplash.com/photo-1555099962-4199c345e5dd?auto=format&fit=crop&q=80'
-  },
-  {
-    id: '2',
-    title: 'UX/UI Design Masterclass',
-    category: 'Design',
-    sales: 320,
-    activeStudents: 290,
-    revenue: 28800,
-    cover: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80'
-  },
-  {
-    id: '4',
-    title: 'Marketing Digital para Devs',
-    category: 'Marketing',
-    sales: 125,
-    activeStudents: 110,
-    revenue: 6250,
-    cover: 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?auto=format&fit=crop&q=80'
-  }
-];
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../services/api';
 
 export const TeacherOverview = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['teacher', 'dashboard', 'stats'],
+    queryFn: async () => {
+      const res = await api.get('/stats/teacher/dashboard');
+      return res.data;
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64 text-accent">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+      </div>
+    );
+  }
+
+  const { kpis, chartData, produtos } = data || { kpis: {}, chartData: [], produtos: [] };
+
   return (
     <div className="animate-in fade-in duration-500 pb-10">
       <div className="mb-8 relative z-10">
@@ -69,7 +50,7 @@ export const TeacherOverview = () => {
             </div>
           </div>
           <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1 relative z-10">Lucro Total Acumulado</p>
-          <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 relative z-10">R$ 80.050</h2>
+          <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 relative z-10">R$ {kpis?.lucro_total?.toLocaleString('pt-BR') || 0}</h2>
         </div>
 
         {/* Card 2: Vendas Realizadas */}
@@ -78,13 +59,9 @@ export const TeacherOverview = () => {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500/20 to-transparent flex items-center justify-center border border-green-500/10">
               <ShoppingCart className="text-green-500 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300" size={24} />
             </div>
-            <div className="flex items-center gap-1 text-green-400 bg-green-500/10 px-2 py-1 rounded-full text-[10px] font-bold">
-              <ArrowUpRight size={14} />
-              +24
-            </div>
           </div>
           <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1">Vendas Realizadas</p>
-          <h2 className="text-3xl font-black text-white">895</h2>
+          <h2 className="text-3xl font-black text-white">{kpis?.vendas || 0}</h2>
         </div>
 
         {/* Card 3: Alunos Ativos */}
@@ -93,13 +70,9 @@ export const TeacherOverview = () => {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-transparent flex items-center justify-center border border-blue-500/10">
               <Users className="text-blue-500 group-hover:scale-110 transition-transform duration-300" size={24} />
             </div>
-            <div className="flex items-center gap-1 text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full text-[10px] font-bold">
-              <ArrowUpRight size={14} />
-              +8%
-            </div>
           </div>
           <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1">Alunos Ativos</p>
-          <h2 className="text-3xl font-black text-white">780</h2>
+          <h2 className="text-3xl font-black text-white">{kpis?.alunos_ativos || 0}</h2>
         </div>
 
         {/* Card 4: Taxa de Conclusão */}
@@ -108,13 +81,9 @@ export const TeacherOverview = () => {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-transparent flex items-center justify-center border border-purple-500/10">
               <GraduationCap className="text-purple-500 group-hover:scale-110 transition-transform duration-300" size={24} />
             </div>
-            <div className="flex items-center gap-1 text-purple-400 bg-purple-500/10 px-2 py-1 rounded-full text-[10px] font-bold">
-              <ArrowUpRight size={14} />
-              +2%
-            </div>
           </div>
-          <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1">Taxa de Conclusão</p>
-          <h2 className="text-3xl font-black text-white">42<span className="text-lg text-muted font-normal">%</span></h2>
+          <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1">Taxa de Conclusão Média</p>
+          <h2 className="text-3xl font-black text-white">{kpis?.taxa_conclusao || 0}<span className="text-lg text-muted font-normal">%</span></h2>
         </div>
 
       </div>
@@ -128,7 +97,7 @@ export const TeacherOverview = () => {
         
         <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={MOCK_CHART_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#FFD700" stopOpacity={0.3}/>
@@ -162,58 +131,62 @@ export const TeacherOverview = () => {
         </div>
         
         <div className="space-y-3">
-          {MOCK_TOP_COURSES.map((course, index) => (
-            <div 
-              key={course.id} 
-              className="flex flex-col md:flex-row md:items-center gap-4 p-3 pr-6 rounded-2xl bg-black/20 hover:bg-black/40 transition-all duration-300 group border border-transparent hover:border-white/5"
-            >
-              {/* Rank Badge */}
-              <div className="hidden md:flex w-10 h-10 rounded-xl bg-gradient-to-br from-white/5 to-transparent items-center justify-center font-black text-white/50 text-base shrink-0 border border-white/5 ml-2">
-                {index + 1}
-              </div>
+          {produtos.length === 0 ? (
+            <p className="text-muted text-sm text-center py-6">Você ainda não tem vendas registradas nos seus cursos.</p>
+          ) : (
+            produtos.map((course: any, index: number) => (
+              <div 
+                key={course.id} 
+                className="flex flex-col md:flex-row md:items-center gap-4 p-3 pr-6 rounded-2xl bg-black/20 hover:bg-black/40 transition-all duration-300 group border border-transparent hover:border-white/5"
+              >
+                {/* Rank Badge */}
+                <div className="hidden md:flex w-10 h-10 rounded-xl bg-gradient-to-br from-white/5 to-transparent items-center justify-center font-black text-white/50 text-base shrink-0 border border-white/5 ml-2">
+                  {index + 1}
+                </div>
 
-              {/* Cover */}
-              <div className="w-full md:w-32 h-20 rounded-xl overflow-hidden bg-bg shrink-0 relative">
-                {course.cover ? (
-                  <img src={course.cover} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                    <ImageIcon size={20} className="text-white/20" />
+                {/* Cover */}
+                <div className="w-full md:w-32 h-20 rounded-xl overflow-hidden bg-bg shrink-0 relative">
+                  {course.thumbnail ? (
+                    <img src={course.thumbnail} alt={course.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+                      <ImageIcon size={20} className="text-white/20" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0 pl-2 md:pl-0">
+                  <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-1">Curso</p>
+                  <h4 className="text-base font-bold text-white truncate group-hover:text-accent transition-colors">{course.titulo}</h4>
+                </div>
+
+                {/* Metrics */}
+                <div className="grid grid-cols-2 md:flex items-center gap-6 md:gap-10 mt-4 md:mt-0 px-2 md:px-0">
+                  <div className="flex flex-col">
+                    <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Vendas</p>
+                    <p className="text-sm font-black text-white">
+                      {course.vendas} <span className="text-xs text-muted font-normal">un.</span>
+                    </p>
                   </div>
-                )}
-              </div>
+                  
+                  <div className="flex flex-col">
+                    <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Taxa de Conclusão</p>
+                    <p className="text-sm font-black text-white">
+                      {course.taxa_conclusao} <span className="text-xs text-muted font-normal">%</span>
+                    </p>
+                  </div>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0 pl-2 md:pl-0">
-                <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-1">{course.category}</p>
-                <h4 className="text-base font-bold text-white truncate group-hover:text-accent transition-colors">{course.title}</h4>
-              </div>
-
-              {/* Metrics */}
-              <div className="grid grid-cols-2 md:flex items-center gap-6 md:gap-10 mt-4 md:mt-0 px-2 md:px-0">
-                <div className="flex flex-col">
-                  <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Vendas</p>
-                  <p className="text-sm font-black text-white">
-                    {course.sales} <span className="text-xs text-muted font-normal">un.</span>
-                  </p>
-                </div>
-                
-                <div className="flex flex-col">
-                  <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Acessos</p>
-                  <p className="text-sm font-black text-white">
-                    {course.activeStudents} <span className="text-xs text-muted font-normal">alunos</span>
-                  </p>
-                </div>
-
-                <div className="flex flex-col col-span-2 md:col-span-1 mt-2 md:mt-0">
-                  <p className="text-[10px] text-accent font-bold uppercase tracking-widest mb-1">Receita</p>
-                  <p className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-yellow-500">
-                    R$ {course.revenue.toLocaleString('pt-BR')}
-                  </p>
+                  <div className="flex flex-col col-span-2 md:col-span-1 mt-2 md:mt-0">
+                    <p className="text-[10px] text-accent font-bold uppercase tracking-widest mb-1">Receita</p>
+                    <p className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-yellow-500">
+                      R$ {course.receita.toLocaleString('pt-BR')}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

@@ -21,6 +21,7 @@ import { messagesRoutes }     from './modules/messages/messages.routes';
 import { lessonsRoutes }      from './modules/lessons/lessons.routes';
 import { quizzesRoutes }      from './modules/quizzes/quizzes.routes';
 import { rankingRoutes }      from './modules/ranking/ranking.routes';
+import { statsRoutes }        from './modules/stats/stats.routes';
 
 import prisma from './config/prisma';
 
@@ -115,6 +116,7 @@ async function bootstrap() {
   await app.register(lessonsRoutes,      { prefix: '/api' });
   await app.register(quizzesRoutes,      { prefix: '/api' });
   await app.register(rankingRoutes,      { prefix: '/api/ranking' });
+  await app.register(statsRoutes,        { prefix: '/api' });
 
   // ── 8. Global error handler ───────────────────────────────────────────────────
   app.setErrorHandler((error, req, reply) => {
