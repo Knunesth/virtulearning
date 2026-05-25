@@ -17,6 +17,7 @@ export async function statsRoutes(fastify: FastifyInstance) {
         select: {
           id: true,
           titulo: true,
+          thumbnail: true,
           preco: true,
           status: true,
           matriculas: {
@@ -82,6 +83,7 @@ export async function statsRoutes(fastify: FastifyInstance) {
         return {
           id: c.id,
           titulo: c.titulo,
+          thumbnail: c.thumbnail,
           preco: c.preco,
           status: c.status,
           vendas: courseSales,
