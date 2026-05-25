@@ -19,6 +19,7 @@ import { TeacherCourses } from '../pages/teacher/TeacherCourses';
 import { TeacherMessages } from '../pages/teacher/TeacherMessages';
 import { TeacherProfile } from '../pages/teacher/TeacherProfile';
 import { TeacherCourseBuilder } from '../pages/teacher/TeacherCourseBuilder';
+import { TeacherCourseForm } from '../pages/teacher/TeacherCourseForm';
 
 import { Terms } from '../pages/Terms';
 import { Privacy } from '../pages/Privacy';
@@ -97,6 +98,8 @@ export const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles={['professor', 'admin']} />}>
           <Route path="/teacher" element={<TeacherOverview />} />
           <Route path="/teacher/courses" element={<TeacherCourses />} />
+          <Route path="/teacher/courses/new" element={<TeacherCourseForm />} />
+          <Route path="/teacher/courses/:id/edit" element={<TeacherCourseForm />} />
           <Route path="/teacher/courses/:id/builder" element={<TeacherCourseBuilder />} />
           <Route path="/teacher/messages" element={<TeacherMessages />} />
           <Route path="/teacher/profile" element={<TeacherProfile />} />
