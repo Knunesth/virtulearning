@@ -120,10 +120,10 @@ export const WatchCourse = () => {
   const isVideoCompleted = activeVideo ? completedLessons.includes(activeVideo.id) : false;
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg text-text overflow-hidden h-screen">
+    <div className="min-h-screen flex flex-col bg-bg text-text overflow-hidden h-screen relative">
       
       {/* HEADER CLASSROOM */}
-      <header className="h-14 flex-shrink-0 bg-[#18181b] border-b border-[#27272a] flex items-center justify-between px-4 z-20">
+      <header className="h-16 flex-shrink-0 bg-card/60 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between px-6 z-30 shadow-2xl">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate(`/course/${course.id}`)}
@@ -159,57 +159,61 @@ export const WatchCourse = () => {
       </header>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10">
         
         {/* LEFT COLUMN: PLAYER & TABS */}
-        <div className="flex-1 flex flex-col bg-black overflow-y-auto custom-scrollbar">
+        <div className="flex-1 flex flex-col bg-bg overflow-y-auto custom-scrollbar relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-accent/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
           
           {/* VIDEO PLAYER AREA */}
-          <div className="w-full bg-black shrink-0 flex flex-col justify-center relative aspect-video xl:max-h-[70vh]">
-            {activeVideo && activeVideo.url_video ? (
-              <iframe 
-                className="w-full h-full absolute inset-0"
-                src={getEmbedUrl(activeVideo.url_video)} 
-                title={activeVideo.titulo}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-              ></iframe>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-500 flex-col gap-2">
-                <PlayCircle className="w-12 h-12 opacity-50" />
-                <p>Nenhum vídeo disponível para esta aula.</p>
-              </div>
-            )}
+          <div className="w-full p-0 md:p-6 lg:p-8 pb-0 shrink-0 flex flex-col justify-center relative z-20">
+            <div className="relative w-full aspect-video xl:max-h-[70vh] rounded-none md:rounded-3xl overflow-hidden border-0 md:border border-white/5 shadow-[0_0_50px_rgba(255,215,0,0.05)] bg-black">
+              {activeVideo && activeVideo.url_video ? (
+                <iframe 
+                  className="w-full h-full absolute inset-0"
+                  src={getEmbedUrl(activeVideo.url_video)} 
+                  title={activeVideo.titulo}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-500 flex-col gap-2">
+                  <PlayCircle className="w-12 h-12 opacity-50" />
+                  <p>Nenhum vídeo disponível para esta aula.</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* TABS MENU */}
-          <div className="bg-[#18181b] border-b border-[#27272a] px-6 flex items-center gap-8 shrink-0">
+          <div className="mt-6 md:mt-8 px-6 md:px-12 flex items-center gap-8 shrink-0 border-b border-white/5 relative z-20">
             <button 
               onClick={() => setActiveTab('visao_geral')}
-              className={`py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'visao_geral' ? 'border-accent text-accent' : 'border-transparent text-gray-400 hover:text-white'}`}
+              className={`py-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'visao_geral' ? 'border-accent text-accent' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
             >
               Visão Geral
             </button>
             <button 
               onClick={() => setActiveTab('perguntas')}
-              className={`py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'perguntas' ? 'border-accent text-accent' : 'border-transparent text-gray-400 hover:text-white'}`}
+              className={`py-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'perguntas' ? 'border-accent text-accent' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
             >
               Perguntas e Respostas
             </button>
             <button 
               onClick={() => setActiveTab('anotacoes')}
-              className={`py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'anotacoes' ? 'border-accent text-accent' : 'border-transparent text-gray-400 hover:text-white'}`}
+              className={`py-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'anotacoes' ? 'border-accent text-accent' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
             >
               Anotações
             </button>
           </div>
 
           {/* TAB CONTENT */}
-          <div className="p-6 md:p-8 bg-bg flex-1">
+          <div className="px-6 md:px-12 py-8 relative z-20 flex-1">
             {activeTab === 'visao_geral' && (
-              <div className="max-w-4xl animate-in fade-in duration-300 space-y-8">
+              <div className="max-w-4xl animate-in fade-in duration-500 space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">{activeVideo?.titulo}</h2>
+                  <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2">Detalhes da Aula</p>
+                  <h2 className="text-3xl font-black text-white mb-3">{activeVideo?.titulo}</h2>
                   <div className="flex items-center gap-4 text-sm text-gray-400">
                     {course.professor?.nome && (
                       <span className="flex items-center gap-1">
@@ -301,17 +305,17 @@ export const WatchCourse = () => {
         </div>
 
         {/* RIGHT COLUMN: MODULES SIDEBAR */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 border-l border-[#27272a] bg-[#18181b] flex flex-col z-10 h-full lg:h-auto overflow-hidden">
-          <div className="p-4 border-b border-[#27272a] flex items-center justify-between bg-[#18181b] sticky top-0 z-10">
-            <h3 className="font-bold text-white">Conteúdo do curso</h3>
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 border-l border-white/5 bg-card/40 backdrop-blur-3xl flex flex-col h-full lg:h-auto overflow-hidden shadow-2xl relative z-30">
+          <div className="p-5 border-b border-white/5 flex items-center justify-between bg-black/20 sticky top-0 z-10 backdrop-blur-md">
+            <h3 className="font-bold text-white text-sm tracking-wide">Conteúdo do curso</h3>
             {activeVideo && isEnrolled && (
               <button 
                 onClick={handleCompleteLesson}
                 disabled={isVideoCompleted || completeLessonMutation.isPending}
-                className={`text-xs px-3 py-1.5 rounded-md font-bold transition-colors flex items-center gap-1.5 ${
+                className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1.5 shadow-lg ${
                   isVideoCompleted 
-                    ? 'bg-success/20 text-success' 
-                    : 'bg-[#27272a] text-gray-300 hover:text-white hover:bg-[#3f3f46]'
+                    ? 'bg-success/20 text-success border border-success/30' 
+                    : 'bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 border border-transparent'
                 }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />

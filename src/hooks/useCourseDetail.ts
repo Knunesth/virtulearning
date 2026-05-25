@@ -96,7 +96,7 @@ export function useCourseDetail(courseId: number) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course', courseId, 'progress'] });
-      // Invalida também a listagem de matrículas e ranking
+      queryClient.invalidateQueries({ queryKey: ['enrollment', 'status', courseId] });
       queryClient.invalidateQueries({ queryKey: ['enrollments', 'my'] });
     },
   });
