@@ -115,13 +115,13 @@ export const Landing = () => {
 
       {/* SEÇÃO 1 — Hero */}
       <section className="relative pt-32 pb-32 overflow-hidden flex flex-col items-center text-center px-6 min-h-[90vh] justify-center">
-        <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-        <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-accent/20 rounded-full blur-[150px] pointer-events-none -translate-x-1/2 -translate-y-1/2 mix-blend-screen animate-pulse duration-[4000ms]"></div>
+        <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[150px] pointer-events-none -translate-x-1/2 -translate-y-1/2 mix-blend-screen animate-pulse duration-[4000ms]"></div>
         
         <div className="relative z-10 flex flex-col items-center mt-10">
           {/* Badge de Urgência */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-danger/10 border border-danger/20 text-xs font-bold tracking-wide text-danger mb-8 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-danger animate-pulse"></span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs font-bold tracking-wide text-accent mb-8 shadow-[0_0_15px_rgba(255,215,0,0.15)]">
+            <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
             AO VIVO — 47 alunos estudando agora
           </div>
 
@@ -190,8 +190,8 @@ export const Landing = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-[#121214]/80 border border-white/5 p-10 rounded-3xl hover:border-accent/40 transition-all duration-300 group">
-            <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[2rem] hover:bg-white/10 transition-all duration-500 group shadow-2xl shadow-black/50 hover:-translate-y-2">
+            <div className="w-16 h-16 bg-gradient-to-br from-accent/20 to-transparent rounded-2xl flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform duration-500 border border-accent/20">
               <MonitorPlay size={32} />
             </div>
             <h3 className="text-2xl font-bold text-white mb-4">Aprenda no seu ritmo</h3>
@@ -200,8 +200,8 @@ export const Landing = () => {
             </p>
           </div>
 
-          <div className="bg-[#121214]/80 border border-white/5 p-10 rounded-3xl hover:border-accent/40 transition-all duration-300 group">
-            <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[2rem] hover:bg-white/10 transition-all duration-500 group shadow-2xl shadow-black/50 hover:-translate-y-2">
+            <div className="w-16 h-16 bg-gradient-to-br from-accent/20 to-transparent rounded-2xl flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform duration-500 border border-accent/20">
               <Award size={32} />
             </div>
             <h3 className="text-2xl font-bold text-white mb-4">Certificado reconhecido</h3>
@@ -210,8 +210,8 @@ export const Landing = () => {
             </p>
           </div>
 
-          <div className="bg-[#121214]/80 border border-white/5 p-10 rounded-3xl hover:border-accent/40 transition-all duration-300 group">
-            <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[2rem] hover:bg-white/10 transition-all duration-500 group shadow-2xl shadow-black/50 hover:-translate-y-2">
+            <div className="w-16 h-16 bg-gradient-to-br from-accent/20 to-transparent rounded-2xl flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform duration-500 border border-accent/20">
               <Users size={32} />
             </div>
             <h3 className="text-2xl font-bold text-white mb-4">Professores especialistas</h3>
@@ -239,7 +239,7 @@ export const Landing = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {coursesData?.data?.slice(0, 3).map((course: any) => (
-              <Link to={`/catalog/${course.id}`} key={course.id} className="group bg-[#09090b] rounded-3xl border border-[#27272a] overflow-hidden hover:border-accent/50 transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(255,215,0,0.15)] hover:-translate-y-1 flex flex-col">
+              <Link to={`/catalog/${course.id}`} key={course.id} className="group bg-white/5 backdrop-blur-md rounded-[2rem] border border-white/10 overflow-hidden hover:border-accent/50 transition-all duration-500 hover:shadow-[0_15px_40px_-10px_rgba(255,215,0,0.2)] hover:-translate-y-2 flex flex-col">
                 <div className="aspect-video w-full relative overflow-hidden bg-[#18181b]">
                   {course.thumbnail_url ? (
                     <img src={course.thumbnail_url} alt={course.titulo} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -300,7 +300,7 @@ export const Landing = () => {
           <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-accent/0 via-accent/30 to-accent/0 z-0"></div>
 
           <div className="flex flex-col items-center text-center relative z-10 group">
-            <div className="w-24 h-24 rounded-full bg-[#121214] border-4 border-[#27272a] flex items-center justify-center text-3xl font-black text-[#a1a1aa] mb-8 group-hover:border-accent group-hover:text-accent group-hover:scale-110 transition-all duration-300">
+            <div className="w-24 h-24 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center text-3xl font-black text-[#a1a1aa] mb-8 group-hover:border-accent/50 group-hover:bg-accent/10 group-hover:text-accent group-hover:scale-110 transition-all duration-500 shadow-xl shadow-black/50 rotate-3 group-hover:rotate-0">
               01
             </div>
             <h3 className="text-2xl font-bold text-white mb-4">Crie sua conta</h3>
@@ -310,7 +310,7 @@ export const Landing = () => {
           </div>
 
           <div className="flex flex-col items-center text-center relative z-10 group">
-            <div className="w-24 h-24 rounded-full bg-[#121214] border-4 border-[#27272a] flex items-center justify-center text-3xl font-black text-[#a1a1aa] mb-8 group-hover:border-accent group-hover:text-accent group-hover:scale-110 transition-all duration-300 shadow-[0_0_30px_rgba(255,215,0,0.15)]">
+            <div className="w-24 h-24 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center text-3xl font-black text-[#a1a1aa] mb-8 group-hover:border-accent/50 group-hover:bg-accent/10 group-hover:text-accent group-hover:scale-110 transition-all duration-500 shadow-xl shadow-black/50 -rotate-3 group-hover:rotate-0">
               02
             </div>
             <h3 className="text-2xl font-bold text-white mb-4">Escolha seu curso</h3>
@@ -320,7 +320,7 @@ export const Landing = () => {
           </div>
 
           <div className="flex flex-col items-center text-center relative z-10 group">
-            <div className="w-24 h-24 rounded-full bg-[#121214] border-4 border-[#27272a] flex items-center justify-center text-3xl font-black text-[#a1a1aa] mb-8 group-hover:border-accent group-hover:text-accent group-hover:scale-110 transition-all duration-300">
+            <div className="w-24 h-24 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center text-3xl font-black text-[#a1a1aa] mb-8 group-hover:border-accent/50 group-hover:bg-accent/10 group-hover:text-accent group-hover:scale-110 transition-all duration-500 shadow-xl shadow-black/50 rotate-3 group-hover:rotate-0">
               03
             </div>
             <h3 className="text-2xl font-bold text-white mb-4">Conquiste o certificado</h3>
@@ -337,7 +337,7 @@ export const Landing = () => {
         <div className="max-w-5xl mx-auto relative z-10 text-center">
           <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-16">O que nossos alunos dizem</h2>
           
-          <div className="relative min-h-[250px] md:min-h-[200px] flex items-center justify-center">
+          <div className="relative min-h-[350px] md:min-h-[250px] flex items-center justify-center">
             {TESTIMONIALS.map((t, idx) => (
               <div 
                 key={idx}
@@ -345,16 +345,14 @@ export const Landing = () => {
                   activeTestimonial === idx ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 pointer-events-none z-0'
                 }`}
               >
-                <div className="mb-6 text-accent">
+                <div className="mb-8 text-accent">
                   <Star size={32} className="fill-accent inline-block" />
                   <Star size={32} className="fill-accent inline-block mx-1" />
                   <Star size={32} className="fill-accent inline-block" />
                   <Star size={32} className="fill-accent inline-block mx-1" />
                   <Star size={32} className="fill-accent inline-block" />
                 </div>
-                <p className="text-xl md:text-2xl lg:text-3xl font-medium text-white max-w-4xl italic mb-10 leading-snug">
-                  "{t.texto}"
-                </p>
+                <p className="text-xl md:text-3xl text-white italic mb-10 leading-relaxed font-medium max-w-4xl">"{t.texto}"</p>
                 <div className="flex items-center gap-4">
                   <div className={`w-14 h-14 rounded-full ${t.avatarColor} flex items-center justify-center text-xl font-bold text-white border-2 border-white/20`}>
                     {t.nome.charAt(0)}
@@ -421,20 +419,20 @@ export const Landing = () => {
 
         <div className="space-y-4">
           {FAQS.map((faq, idx) => (
-            <div key={idx} className="bg-[#121214] border border-[#27272a] rounded-2xl overflow-hidden transition-all duration-300">
+            <div key={idx} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden transition-all duration-300 hover:bg-white/[0.07] hover:border-accent/30 hover:shadow-lg">
               <button 
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors focus:outline-none"
+                className="w-full px-8 py-6 flex items-center justify-between text-left focus:outline-none"
               >
                 <span className="text-lg font-bold text-white">{faq.q}</span>
-                <ChevronDown size={20} className={`text-accent transition-transform duration-300 ${openFaq === idx ? 'rotate-180' : ''}`} />
+                <ChevronDown size={24} className={`text-accent transition-transform duration-500 flex-shrink-0 ml-4 ${openFaq === idx ? 'rotate-180' : ''}`} />
               </button>
               <div 
-                className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${
-                  openFaq === idx ? 'max-h-40 pb-5 opacity-100' : 'max-h-0 opacity-0'
+                className={`px-8 overflow-hidden transition-all duration-500 ease-in-out ${
+                  openFaq === idx ? 'max-h-60 pb-8 opacity-100' : 'max-h-0 opacity-0'
                 }`}
               >
-                <p className="text-[#a1a1aa] leading-relaxed">{faq.a}</p>
+                <p className="text-[#a1a1aa] leading-relaxed text-lg">{faq.a}</p>
               </div>
             </div>
           ))}
